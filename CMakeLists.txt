@@ -23,6 +23,7 @@ include_directories(
 set(SOURCES
     src/main.cpp
     src/auth.cpp
+    src/file_utils.cpp
 )
 
 # Add header files
@@ -30,6 +31,7 @@ set(HEADERS
     include/auth/auth.hpp
     include/auth/auth_middleware.hpp
     include/core/status.hpp
+    include/core/file_utils.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
     include/web/route_handlers.hpp

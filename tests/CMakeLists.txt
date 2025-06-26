@@ -1,7 +1,9 @@
 add_executable(dedup_tests
     status_test.cpp
     auth_test.cpp
+    file_utils_test.cpp
     ../src/auth.cpp
+    ../src/file_utils.cpp
 )
 
 target_include_directories(dedup_tests PRIVATE

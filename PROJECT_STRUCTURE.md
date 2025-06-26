@@ -12,7 +12,8 @@ dedup-server/
 │   │   └── auth_middleware.hpp # HTTP authentication middleware
 │   ├── core/                   # Core functionality
 │   │   ├── status.hpp          # System status checking
-│   │   └── server_config.hpp   # Server configuration constants
+│   │   ├── server_config.hpp   # Server configuration constants
+│   │   └── file_utils.hpp      # File system utilities with reactive streams
 │   ├── logging/                # Logging functionality
 │   │   └── logger.hpp          # spdlog-based logging wrapper
 │   ├── web/                    # Web/HTTP functionality
@@ -24,11 +25,15 @@ dedup-server/
 │       └── picojson/           # JSON library
 ├── src/
 │   ├── main.cpp               # Application entry point
-│   └── auth.cpp               # Authentication implementation
+│   ├── auth.cpp               # Authentication implementation
+│   └── file_utils.cpp         # File utilities implementation
 ├── tests/                     # Unit tests
 │   ├── auth_test.cpp          # Authentication tests
 │   ├── status_test.cpp        # Status tests
+│   ├── file_utils_test.cpp    # File utilities tests
 │   └── CMakeLists.txt         # Test build configuration
+├── examples/                  # Example code
+│   └── file_utils_example.cpp # FileUtils usage example
 ├── build/                     # Build artifacts (generated)
 ├── CMakeLists.txt             # Main build configuration
 └── README.md                  # Project documentation
@@ -45,6 +50,7 @@ dedup-server/
 
 - **status.hpp**: System health and status checking functionality
 - **server_config.hpp**: Server configuration constants and settings
+- **file_utils.hpp**: File system utilities with reactive stream support
 
 ### 📝 **Logging Module** (`include/logging/`)
 
@@ -60,6 +66,54 @@ dedup-server/
 - External libraries and dependencies
 - Kept separate to avoid conflicts with system libraries
 
+## FileUtils - Reactive File System Operations
+
+The `FileUtils` class provides reactive file system operations using a custom observable pattern:
+
+### Features
+
+- **Reactive Streams**: Uses a custom `SimpleObservable` implementation
+- **Recursive Scanning**: Support for both recursive and non-recursive directory scanning
+- **Error Handling**: Proper error propagation through the observable chain
+- **Thread Safety**: Safe for use in multi-threaded environments
+
+### Usage Example
+
+```cpp
+#include "core/file_utils.hpp"
+
+// List files non-recursively
+auto observable = FileUtils::listFilesAsObservable("/path/to/dir", false);
+observable.subscribe(
+    [](const std::string& file_path) {
+        std::cout << "Found: " << file_path << std::endl;
+    },
+    [](const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    },
+    []() {
+        std::cout << "Scan completed." << std::endl;
+    }
+);
+
+// List files recursively
+auto recursive_observable = FileUtils::listFilesAsObservable("/path/to/dir", true);
+recursive_observable.subscribe(
+    [](const std::string& file_path) {
+        std::cout << "Found: " << file_path << std::endl;
+    }
+);
+```
+
+### SimpleObservable Implementation
+
+The custom `SimpleObservable` provides:
+
+- **onNext**: Called for each file found
+- **onError**: Called when an error occurs
+- **onComplete**: Called when scanning is finished
+- **Flexible Subscription**: Support for different callback combinations
+
 ## Benefits of This Organization
 
 1. **Clear Separation of Concerns**: Each module has a specific responsibility
@@ -67,6 +121,7 @@ dedup-server/
 3. **Scalability**: Easy to add new modules or expand existing ones
 4. **Maintainability**: Related functionality is grouped together
 5. **Dependency Management**: Clear dependencies between modules
+6. **Reactive Programming**: Modern reactive patterns for file operations
 
 ## Include Paths
 
@@ -76,6 +131,7 @@ The project uses relative include paths that reflect the module structure:
 // Core functionality
 #include "core/status.hpp"
 #include "core/server_config.hpp"
+#include "core/file_utils.hpp"
 
 // Authentication
 #include "auth/auth.hpp"
@@ -98,6 +154,7 @@ When adding new functionality:
 3. **Update include paths** to reflect the new structure
 4. **Update CMakeLists.txt** if adding new files
 5. **Add tests** in the appropriate test file
+6. **Create examples** if the functionality is complex
 
 ## Build System
 

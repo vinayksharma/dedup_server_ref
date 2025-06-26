@@ -49,7 +49,7 @@ The server will start on `localhost:8080`.
 
 ### Authentication
 
-- `POST /login`
+- `POST /auth/login`
   - Request body: `{"username": "string", "password": "string"}`
   - Response: `{"token": "string"}`
 
@@ -58,7 +58,7 @@ The server will start on `localhost:8080`.
 All status endpoints require a valid JWT token in the `Authorization` header:
 `Authorization: Bearer <token>`
 
-- `GET /status`
+- `GET /auth/status`
   - Response: `{"status": boolean}`
 
 ## Example Usage
@@ -66,7 +66,7 @@ All status endpoints require a valid JWT token in the `Authorization` header:
 1. Get a token:
 
 ```bash
-curl -X POST http://localhost:8080/login \
+curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "testuser", "password": "testpass"}'
 ```
@@ -74,7 +74,7 @@ curl -X POST http://localhost:8080/login \
 2. Check service status:
 
 ```bash
-curl -X GET http://localhost:8080/status \
+curl -X GET http://localhost:8080/auth/status \
   -H "Authorization: Bearer <token>"
 ```
 

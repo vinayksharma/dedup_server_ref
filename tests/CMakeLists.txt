@@ -1,7 +1,6 @@
 add_executable(dedup_tests
     status_test.cpp
     auth_test.cpp
-    ../src/status.cpp
     ../src/auth.cpp
 )
 

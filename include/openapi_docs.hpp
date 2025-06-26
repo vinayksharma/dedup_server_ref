@@ -37,7 +37,7 @@ public:
     }
   ],
   "paths": {
-    "/login": {
+    "/auth/login": {
       "post": {
         "summary": "Login to get JWT token",
         "requestBody": {
@@ -81,7 +81,7 @@ public:
         }
       }
     },
-    "/status": {
+    "/auth/status": {
       "get": {
         "summary": "Check service status",
         "responses": {

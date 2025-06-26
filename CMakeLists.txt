@@ -17,7 +17,6 @@ include_directories(
 # Add source files
 set(SOURCES
     src/main.cpp
-    src/status.cpp
     src/auth.cpp
 )
 

@@ -15,23 +15,16 @@ public:
         if (auth_header.empty())
         {
             res.status = 401;
-            json error = {{"error", "No authorization header"}};
-            res.set_content(error.dump(), "application/json");
+            res.set_content(json{{"error", "No authorization header"}}.dump(), "application/json");
             return false;
         }
 
-        // Remove "Bearer " prefix if present
-        std::string token = auth_header;
-        if (token.substr(0, 7) == "Bearer ")
-        {
-            token = token.substr(7);
-        }
+        std::string token = auth_header.substr(0, 7) == "Bearer " ? auth_header.substr(7) : auth_header;
 
         if (!auth.verifyToken(token))
         {
             res.status = 401;
-            json error = {{"error", "Invalid token"}};
-            res.set_content(error.dump(), "application/json");
+            res.set_content(json{{"error", "Invalid token"}}.dump(), "application/json");
             return false;
         }
 

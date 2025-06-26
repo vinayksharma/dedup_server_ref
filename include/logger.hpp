@@ -18,23 +18,6 @@ public:
         ERROR
     };
 
-    static void log(Level level, const std::string &message)
-    {
-        auto now = std::chrono::system_clock::now();
-        auto now_time_t = std::chrono::system_clock::to_time_t(now);
-        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          now.time_since_epoch()) %
-                      1000;
-
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&now_time_t), "%Y-%m-%d %H:%M:%S")
-           << '.' << std::setfill('0') << std::setw(3) << now_ms.count()
-           << " [" << levelToString(level) << "] "
-           << message;
-
-        std::cout << ss.str() << std::endl;
-    }
-
     static void trace(const std::string &message)
     {
         log(Level::TRACE, message);
@@ -61,7 +44,24 @@ public:
     }
 
 private:
-    static std::string levelToString(Level level)
+    static void log(Level level, const std::string &message)
+    {
+        auto now = std::chrono::system_clock::now();
+        auto now_time_t = std::chrono::system_clock::to_time_t(now);
+        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          now.time_since_epoch()) %
+                      1000;
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&now_time_t), "%Y-%m-%d %H:%M:%S")
+           << '.' << std::setfill('0') << std::setw(3) << now_ms.count()
+           << " [" << levelToString(level) << "] "
+           << message;
+
+        std::cout << ss.str() << std::endl;
+    }
+
+    static const char *levelToString(Level level)
     {
         switch (level)
         {

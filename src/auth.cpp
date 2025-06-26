@@ -1,4 +1,4 @@
-#include "auth.hpp"
+#include "auth/auth.hpp"
 #include <chrono>
 #include <stdexcept>
 

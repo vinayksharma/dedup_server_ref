@@ -2,7 +2,7 @@
 
 #include <httplib.h>
 #include <nlohmann/json.hpp>
-#include "auth.hpp"
+#include "auth/auth.hpp"
 
 using json = nlohmann::json;
 

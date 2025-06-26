@@ -1,9 +1,9 @@
-#include "status.hpp"
-#include "auth.hpp"
-#include "server_config.hpp"
-#include "auth_middleware.hpp"
-#include "route_handlers.hpp"
-#include "openapi_docs.hpp"
+#include "core/status.hpp"
+#include "auth/auth.hpp"
+#include "core/server_config.hpp"
+#include "auth/auth_middleware.hpp"
+#include "web/route_handlers.hpp"
+#include "web/openapi_docs.hpp"
 #include <httplib.h>
 #include <iostream>
 #include <jwt-cpp/jwt.h>

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "status.hpp"
+#include "core/status.hpp"
 
 class StatusTest : public ::testing::Test
 {

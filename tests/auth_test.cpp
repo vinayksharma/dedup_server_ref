@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "auth.hpp"
+#include "auth/auth.hpp"
 
 class AuthTest : public ::testing::Test
 {

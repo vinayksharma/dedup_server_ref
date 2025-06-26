@@ -2,10 +2,10 @@
 
 #include <httplib.h>
 #include <nlohmann/json.hpp>
-#include "status.hpp"
-#include "auth.hpp"
-#include "auth_middleware.hpp"
-#include "logger.hpp"
+#include "core/status.hpp"
+#include "auth/auth.hpp"
+#include "auth/auth_middleware.hpp"
+#include "logging/logger.hpp"
 
 using json = nlohmann::json;
 

@@ -11,6 +11,9 @@
 int main()
 {
         Status status;
+        // TODO: PRODUCTION SECURITY - Replace hardcoded secret key with environment variable
+        // Current behavior: Tokens persist across server restarts because secret key is hardcoded
+        // For production: Use environment variable like getenv("JWT_SECRET_KEY")
         Auth auth("your-secret-key-here"); // In production, use a secure key from environment variable
 
         httplib::Server svr;

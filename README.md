@@ -61,6 +61,16 @@ All status endpoints require a valid JWT token in the `Authorization` header:
 - `GET /auth/status`
   - Response: `{"status": boolean}`
 
+### Duplicate Finding Operations
+
+All duplicate finding endpoints require a valid JWT token in the `Authorization` header:
+`Authorization: Bearer <token>`
+
+- `POST /duplicates/find`
+  - Request body: `{"directory": "string"}`
+  - Response: `{"message": "string"}`
+  - Scans directory recursively and prints found files to console
+
 ## Example Usage
 
 1. Get a token:
@@ -78,10 +88,33 @@ curl -X GET http://localhost:8080/auth/status \
   -H "Authorization: Bearer <token>"
 ```
 
+3. Find duplicates in a directory:
+
+```bash
+curl -X POST http://localhost:8080/duplicates/find \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"directory": "/path/to/scan"}'
+```
+
 ## Security Notes
 
-- In production, use a secure secret key for JWT signing
+### Current Development State (NOT PRODUCTION READY)
+
+- **Hardcoded credentials**: username: "testuser", password: "testpass"
+- **Hardcoded JWT secret**: Tokens persist across server restarts
+- **No token expiration**: JWT tokens never expire
+- **No password hashing**: Passwords stored in plain text
+- **No rate limiting**: No protection against brute force attacks
+
+### Production Requirements
+
+- Use a secure secret key for JWT signing from environment variables
 - Store the secret key in environment variables
 - Implement proper user authentication against a database
+- Add JWT token expiration (24 hours recommended)
+- Hash passwords with bcrypt/argon2
 - Use HTTPS in production
-- Consider rate limiting and other security measures
+- Implement rate limiting and other security measures
+- Add audit logging for authentication events
+- Consider token blacklisting/revocation mechanisms

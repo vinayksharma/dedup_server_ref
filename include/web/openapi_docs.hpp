@@ -108,6 +108,54 @@ public:
           }
         }
       }
+    },
+    "/duplicates/find": {
+      "post": {
+        "summary": "Find duplicates in directory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "directory": {
+                    "type": "string",
+                    "description": "Directory path to scan for duplicates"
+                  }
+                },
+                "required": ["directory"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Directory scan completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Directory scan failed"
+          }
+        }
+      }
     }
   }
 })";

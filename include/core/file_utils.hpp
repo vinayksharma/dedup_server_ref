@@ -68,4 +68,12 @@ private:
      * @return True if path exists and is a directory, false otherwise
      */
     static bool isValidDirectory(const std::string &path);
+
+    /**
+     * Recursively scans a directory with error handling for permission issues
+     * @param dir_path The directory path to scan
+     * @param onNext Callback function for each file found
+     */
+    static void scanDirectoryRecursively(const std::string &dir_path,
+                                         std::function<void(const std::string &)> onNext);
 };

@@ -28,14 +28,8 @@ SimpleObservable<std::string> FileUtils::listFilesInternal(const std::string &di
 
                 if (recursive)
                 {
-                    // Recursive directory iteration
-                    for (const auto &entry : fs::recursive_directory_iterator(dir_path))
-                    {
-                        if (entry.is_regular_file())
-                        {
-                            onNext(entry.path().string());
-                        }
-                    }
+                    // Custom recursive directory iteration with error handling
+                    scanDirectoryRecursively(dir_path, onNext);
                 }
                 else
                 {
@@ -75,4 +69,51 @@ bool FileUtils::isValidDirectory(const std::string &path)
     {
         return false;
     }
+}
+
+void FileUtils::scanDirectoryRecursively(const std::string &dir_path,
+                                         std::function<void(const std::string &)> onNext)
+{
+    // Custom recursive scanner that handles permission errors gracefully
+    std::function<void(const fs::path &)> scanDirectory = [&](const fs::path &current_path)
+    {
+        try
+        {
+            for (const auto &entry : fs::directory_iterator(current_path))
+            {
+                try
+                {
+                    if (entry.is_regular_file())
+                    {
+                        onNext(entry.path().string());
+                    }
+                    else if (entry.is_directory())
+                    {
+                        // Recursively scan subdirectories
+                        scanDirectory(entry.path());
+                    }
+                }
+                catch (const fs::filesystem_error &e)
+                {
+                    // Log the error but continue scanning
+                    std::cerr << "Warning: Skipping entry due to permission error: " << entry.path().string()
+                              << " - " << e.what() << std::endl;
+                    continue;
+                }
+            }
+        }
+        catch (const fs::filesystem_error &e)
+        {
+            // Log the error but don't stop the entire scan
+            std::cerr << "Warning: Error accessing directory " << current_path.string() << ": " << e.what() << std::endl;
+        }
+        catch (const std::exception &e)
+        {
+            // Log any other errors
+            std::cerr << "Warning: Unexpected error scanning directory " << current_path.string() << ": " << e.what() << std::endl;
+        }
+    };
+
+    // Start the recursive scan
+    scanDirectory(fs::path(dir_path));
 }

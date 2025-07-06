@@ -8,6 +8,33 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenSSL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+# TODO: DEDUP MODES - Libraries for different deduplication modes
+# FAST MODE: OpenCV (dHash) + FFmpeg
+# BALANCED MODE: libvips + OpenCV (pHash) + FFmpeg  
+# QUALITY MODE: ONNX Runtime + CNN Embeddings (ResNet/CLIP) + FFmpeg
+
+# OpenCV - Required for FAST and BALANCED modes
+find_package(OpenCV REQUIRED)
+
+# FFmpeg - Required for video processing in all modes
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+)
+
+# libvips - Required for BALANCED mode (image processing)
+# TODO: Install with: brew install vips (macOS) or apt-get install libvips-dev (Ubuntu)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(VIPS IMPORTED_TARGET libvips)
+
+# ONNX Runtime - Required for QUALITY mode (CNN embeddings)
+# TODO: Install with: brew install onnxruntime (macOS) or download from ONNX website
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(ONNXRUNTIME IMPORTED_TARGET onnxruntime)
+
 # Add include directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
@@ -32,6 +59,7 @@ set(HEADERS
     include/auth/auth_middleware.hpp
     include/core/status.hpp
     include/core/file_utils.hpp
+    include/core/dedup_modes.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
     include/web/route_handlers.hpp
@@ -49,6 +77,14 @@ target_link_libraries(dedup_server
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     pthread
+    # TODO: DEDUP MODES - Link libraries for different modes
+    # FAST MODE: OpenCV + FFmpeg
+    # BALANCED MODE: libvips + OpenCV + FFmpeg
+    # QUALITY MODE: ONNX Runtime + FFmpeg
+    ${OpenCV_LIBS}
+    PkgConfig::FFMPEG
+    $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
+    $<$<BOOL:${ONNXRUNTIME_FOUND}>:PkgConfig::ONNXRUNTIME>
 )
 
 # Add Google Test

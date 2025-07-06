@@ -9,6 +9,17 @@ A secure dedup service that provides status checking through a REST API with JWT
 - RESTful API endpoints
 - Unit tests
 - Modern C++ (C++17)
+- Multi-mode deduplication (FAST, BALANCED, QUALITY)
+
+### Deduplication Modes
+
+The server supports three deduplication modes optimized for different use cases:
+
+- **FAST Mode**: OpenCV dHash + FFmpeg - Fast scanning, acceptable quality, low resource use
+- **BALANCED Mode**: libvips + OpenCV pHash + FFmpeg - Good balance of speed and accuracy
+- **QUALITY Mode**: ONNX Runtime + CNN embeddings + FFmpeg - Highest accuracy, computationally intensive (GPU recommended)
+
+_Note: Deduplication functionality is currently in development and will be implemented in future versions._
 
 ## Dependencies
 
@@ -19,6 +30,26 @@ A secure dedup service that provides status checking through a REST API with JWT
 - Google Test (automatically downloaded by CMake)
 - cpp-httplib (automatically downloaded by CMake)
 - jwt-cpp (automatically downloaded by CMake)
+
+### Deduplication Libraries (Required for all modes)
+
+- **OpenCV** - Image processing and perceptual hashing (dHash, pHash)
+- **FFmpeg** - Video processing and key frame extraction
+- **libvips** - High-performance image processing (BALANCED mode)
+- **ONNX Runtime** - Neural network inference (QUALITY mode)
+
+### Installation Notes
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install libopencv-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libvips-dev
+
+# macOS
+brew install opencv ffmpeg vips onnxruntime
+
+# CentOS/RHEL
+sudo yum install opencv-devel ffmpeg-devel vips-devel
+```
 
 ## Building
 

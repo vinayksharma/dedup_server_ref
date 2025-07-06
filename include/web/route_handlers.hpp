@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include "core/status.hpp"
 #include "core/file_utils.hpp"
+#include "core/server_config_manager.hpp"
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
 #include "logging/logger.hpp"
@@ -33,6 +34,27 @@ public:
                  {
             if (!AuthMiddleware::verify_auth(req, res, auth)) return;
             handleFindDuplicates(req, res); });
+
+        // Configuration endpoints
+        svr.Get("/config", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetConfig(req, res); });
+
+        svr.Put("/config", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateConfig(req, res); });
+
+        svr.Post("/config/reload", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleReloadConfig(req, res); });
+
+        svr.Post("/config/save", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleSaveConfig(req, res); });
     }
 
 private:
@@ -116,6 +138,114 @@ private:
         catch (const std::exception &e)
         {
             Logger::error("Find duplicates error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    // Configuration handlers
+    static void handleGetConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get config request");
+        try
+        {
+            auto &config_manager = ServerConfigManager::getInstance();
+            json config = config_manager.getConfig();
+
+            res.set_content(config.dump(), "application/json");
+            Logger::info("Configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update config request");
+        try
+        {
+            auto body = json::parse(req.body);
+            auto &config_manager = ServerConfigManager::getInstance();
+
+            // Validate the configuration
+            if (!config_manager.validateConfig(body))
+            {
+                res.status = 400;
+                res.set_content(json{{"error", "Invalid configuration"}}.dump(), "application/json");
+                return;
+            }
+
+            // Update configuration (this will trigger reactive events)
+            config_manager.updateConfig(body);
+
+            res.set_content(json{{"message", "Configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleReloadConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received reload config request");
+        try
+        {
+            auto body = json::parse(req.body);
+            std::string file_path = body["file_path"];
+
+            auto &config_manager = ServerConfigManager::getInstance();
+
+            if (config_manager.loadConfig(file_path))
+            {
+                res.set_content(json{{"message", "Configuration reloaded successfully"}}.dump(), "application/json");
+                Logger::info("Configuration reloaded from: " + file_path);
+            }
+            else
+            {
+                res.status = 400;
+                res.set_content(json{{"error", "Failed to reload configuration"}}.dump(), "application/json");
+            }
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Reload config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleSaveConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received save config request");
+        try
+        {
+            auto body = json::parse(req.body);
+            std::string file_path = body["file_path"];
+
+            auto &config_manager = ServerConfigManager::getInstance();
+
+            if (config_manager.saveConfig(file_path))
+            {
+                res.set_content(json{{"message", "Configuration saved successfully"}}.dump(), "application/json");
+                Logger::info("Configuration saved to: " + file_path);
+            }
+            else
+            {
+                res.status = 500;
+                res.set_content(json{{"error", "Failed to save configuration"}}.dump(), "application/json");
+            }
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Save config error: " + std::string(e.what()));
             res.status = 400;
             res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
         }

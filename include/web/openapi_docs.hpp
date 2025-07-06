@@ -156,6 +156,199 @@ public:
           }
         }
       }
+    },
+    "/config": {
+      "get": {
+        "summary": "Get server configuration",
+        "responses": {
+          "200": {
+            "description": "Server configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dedup_mode": {
+                      "type": "string",
+                      "enum": ["FAST", "BALANCED", "QUALITY"]
+                    },
+                    "log_level": {
+                      "type": "string",
+                      "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"]
+                    },
+                    "server_port": {
+                      "type": "integer"
+                    },
+                    "auth_secret": {
+                      "type": "string"
+                    },
+                    "server_host": {
+                      "type": "string"
+                    },
+                    "max_file_size": {
+                      "type": "integer"
+                    },
+                    "scan_timeout": {
+                      "type": "integer"
+                    },
+                    "enable_compression": {
+                      "type": "boolean"
+                    },
+                    "enable_caching": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update server configuration",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dedup_mode": {
+                    "type": "string",
+                    "enum": ["FAST", "BALANCED", "QUALITY"]
+                  },
+                  "log_level": {
+                    "type": "string",
+                    "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"]
+                  },
+                  "server_port": {
+                    "type": "integer"
+                  },
+                  "auth_secret": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid configuration"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/config/reload": {
+      "post": {
+        "summary": "Reload configuration from file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "description": "Path to configuration file"
+                  }
+                },
+                "required": ["file_path"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration reloaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to reload configuration"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/config/save": {
+      "post": {
+        "summary": "Save configuration to file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_path": {
+                    "type": "string",
+                    "description": "Path to save configuration file"
+                  }
+                },
+                "required": ["file_path"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to save configuration"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   }
 })";

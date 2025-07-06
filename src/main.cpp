@@ -1,6 +1,7 @@
 #include "core/status.hpp"
 #include "auth/auth.hpp"
 #include "core/server_config.hpp"
+#include "core/server_config_manager.hpp"
 #include "auth/auth_middleware.hpp"
 #include "web/route_handlers.hpp"
 #include "web/openapi_docs.hpp"
@@ -10,11 +11,11 @@
 
 int main()
 {
+        // Initialize configuration manager
+        auto &config_manager = ServerConfigManager::getInstance();
+
         Status status;
-        // TODO: PRODUCTION SECURITY - Replace hardcoded secret key with environment variable
-        // Current behavior: Tokens persist across server restarts because secret key is hardcoded
-        // For production: Use environment variable like getenv("JWT_SECRET_KEY")
-        Auth auth("your-secret-key-here"); // In production, use a secure key from environment variable
+        Auth auth(config_manager.getAuthSecret()); // Use config from manager
 
         httplib::Server svr;
 

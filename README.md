@@ -102,6 +102,33 @@ All duplicate finding endpoints require a valid JWT token in the `Authorization`
   - Response: `{"message": "string"}`
   - Scans directory recursively and prints found files to console
 
+### Configuration Operations
+
+All configuration endpoints require a valid JWT token in the `Authorization` header:
+`Authorization: Bearer <token>`
+
+- `GET /config`
+
+  - Response: Complete server configuration JSON
+  - Returns current server settings including dedup mode, log level, etc.
+
+- `PUT /config`
+
+  - Request body: Partial or complete configuration JSON
+  - Response: `{"message": "Configuration updated successfully"}`
+  - Updates server configuration and triggers reactive events
+
+- `POST /config/reload`
+
+  - Request body: `{"file_path": "string"}`
+  - Response: `{"message": "Configuration reloaded successfully"}`
+  - Reloads configuration from specified file
+
+- `POST /config/save`
+  - Request body: `{"file_path": "string"}`
+  - Response: `{"message": "Configuration saved successfully"}`
+  - Saves current configuration to specified file
+
 ## Example Usage
 
 1. Get a token:
@@ -126,6 +153,31 @@ curl -X POST http://localhost:8080/duplicates/find \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"directory": "/path/to/scan"}'
+```
+
+4. Get server configuration:
+
+```bash
+curl -X GET http://localhost:8080/config \
+  -H "Authorization: Bearer <token>"
+```
+
+5. Update server configuration:
+
+```bash
+curl -X PUT http://localhost:8080/config \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"dedup_mode": "FAST", "log_level": "DEBUG"}'
+```
+
+6. Save configuration to file:
+
+```bash
+curl -X POST http://localhost:8080/config/save \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"file_path": "/path/to/config.json"}'
 ```
 
 ## Security Notes

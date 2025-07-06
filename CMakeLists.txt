@@ -28,12 +28,12 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
 # libvips - Required for BALANCED mode (image processing)
 # TODO: Install with: brew install vips (macOS) or apt-get install libvips-dev (Ubuntu)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(VIPS IMPORTED_TARGET libvips)
+pkg_check_modules(VIPS IMPORTED_TARGET vips)
 
 # ONNX Runtime - Required for QUALITY mode (CNN embeddings)
 # TODO: Install with: brew install onnxruntime (macOS) or download from ONNX website
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(ONNXRUNTIME IMPORTED_TARGET onnxruntime)
+pkg_check_modules(ONNXRUNTIME IMPORTED_TARGET libonnxruntime)
 
 # Add include directories
 include_directories(

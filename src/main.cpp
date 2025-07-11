@@ -32,6 +32,6 @@ int main()
 
         std::cout << "Server starting on " << ServerConfig::getServerUrl() << std::endl;
         std::cout << "API documentation available at: " << ServerConfig::getServerUrl() << ServerConfig::API_DOCS_PATH << std::endl;
-        svr.listen(ServerConfig::HOST, ServerConfig::PORT);
+        svr.listen(ServerConfig::HOST, config_manager.getServerPort());
         return 0;
 }

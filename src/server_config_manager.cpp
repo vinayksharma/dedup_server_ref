@@ -25,9 +25,8 @@ void ServerConfigManager::initializeDefaultConfig()
         {"auth_secret", "your-secret-key-here"},
         {"server_host", "localhost"},
         {"max_file_size", 1000000000}, // 1GB
-        {"scan_timeout", 300},         // 5 minutes
-        {"enable_compression", true},
-        {"enable_caching", true}};
+        {"scan_timeout", 300}          // 5 minutes
+    };
 }
 
 DedupMode ServerConfigManager::getDedupMode() const
@@ -289,7 +288,7 @@ bool ServerConfigManager::validateConfig(const json &config) const
 {
     // Basic validation - check for required fields
     std::vector<std::string> required_fields = {
-        "dedup_mode", "log_level", "server_port", "auth_secret"};
+        "dedup_mode", "log_level", "server_port", "auth_secret", "max_file_size", "scan_timeout"};
 
     for (const auto &field : required_fields)
     {
@@ -311,6 +310,18 @@ bool ServerConfigManager::validateConfig(const json &config) const
     if (mode != "FAST" && mode != "BALANCED" && mode != "QUALITY")
     {
         Logger::error("Invalid dedup mode: " + mode);
+        return false;
+    }
+
+    if (config["max_file_size"].get<int>() <= 0)
+    {
+        Logger::error("Invalid max_file_size: " + std::to_string(config["max_file_size"].get<int>()));
+        return false;
+    }
+
+    if (config["scan_timeout"].get<int>() <= 0)
+    {
+        Logger::error("Invalid scan_timeout: " + std::to_string(config["scan_timeout"].get<int>()));
         return false;
     }
 

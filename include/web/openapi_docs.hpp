@@ -190,12 +190,6 @@ public:
                     },
                     "scan_timeout": {
                       "type": "integer"
-                    },
-                    "enable_compression": {
-                      "type": "boolean"
-                    },
-                    "enable_caching": {
-                      "type": "boolean"
                     }
                   }
                 }
@@ -229,6 +223,12 @@ public:
                   },
                   "auth_secret": {
                     "type": "string"
+                  },
+                  "max_file_size": {
+                    "type": "integer"
+                  },
+                  "scan_timeout": {
+                    "type": "integer"
                   }
                 }
               }

@@ -119,6 +119,17 @@ void FileProcessor::clearStats()
     successful_files_processed_ = 0;
 }
 
+std::string FileProcessor::getFileCategory(const std::string &file_path)
+{
+    if (MediaProcessor::isImageFile(file_path))
+        return "Image";
+    if (MediaProcessor::isVideoFile(file_path))
+        return "Video";
+    if (MediaProcessor::isAudioFile(file_path))
+        return "Audio";
+    return "Unknown";
+}
+
 void FileProcessor::handleFile(const std::string &file_path)
 {
     Logger::debug("Handling file: " + file_path);

@@ -54,6 +54,13 @@ public:
      */
     void clearStats();
 
+    /**
+     * @brief Get the category of a file (Audio, Image, or Video)
+     * @param file_path Path to the file
+     * @return std::string category name
+     */
+    static std::string getFileCategory(const std::string &file_path);
+
 private:
     std::unique_ptr<DatabaseManager> db_manager_;
     size_t total_files_processed_;

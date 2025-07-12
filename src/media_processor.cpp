@@ -52,6 +52,20 @@ ProcessingResult MediaProcessor::processFile(const std::string &file_path, Dedup
                 return ProcessingResult(false, "Unknown dedup mode");
             }
         }
+        else if (isAudioFile(file_path))
+        {
+            switch (mode)
+            {
+            case DedupMode::FAST:
+                return processAudioFast(file_path);
+            case DedupMode::BALANCED:
+                return processAudioBalanced(file_path);
+            case DedupMode::QUALITY:
+                return processAudioQuality(file_path);
+            default:
+                return ProcessingResult(false, "Unknown dedup mode");
+            }
+        }
         else
         {
             return ProcessingResult(false, "Unsupported file type: " + file_path);
@@ -71,13 +85,21 @@ bool MediaProcessor::isSupportedFile(const std::string &file_path)
     return std::find(supported.begin(), supported.end(), ext) != supported.end();
 }
 
+// Static extension lists
+const std::vector<std::string> MediaProcessor::image_extensions_ = {
+    "jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp", "jp2", "ppm", "pgm", "pbm", "pnm", "exr", "hdr"};
+const std::vector<std::string> MediaProcessor::video_extensions_ = {
+    "mp4", "avi", "mov", "mkv", "wmv", "flv", "webm", "m4v", "mpg", "mpeg", "3gp", "ts", "mts", "m2ts", "ogv"};
+const std::vector<std::string> MediaProcessor::audio_extensions_ = {
+    "mp3", "wav", "flac", "ogg", "m4a", "aac", "opus", "wma", "aiff", "alac", "amr", "au"};
+
 std::vector<std::string> MediaProcessor::getSupportedExtensions()
 {
-    return {
-        // Image formats
-        "jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp",
-        // Video formats
-        "mp4", "avi", "mov", "mkv", "wmv", "flv", "webm", "m4v"};
+    std::vector<std::string> all;
+    all.insert(all.end(), image_extensions_.begin(), image_extensions_.end());
+    all.insert(all.end(), video_extensions_.begin(), video_extensions_.end());
+    all.insert(all.end(), audio_extensions_.begin(), audio_extensions_.end());
+    return all;
 }
 
 ProcessingResult MediaProcessor::processImageFast(const std::string &file_path)
@@ -252,18 +274,82 @@ ProcessingResult MediaProcessor::processVideoQuality(const std::string &file_pat
     return result;
 }
 
+ProcessingResult MediaProcessor::processAudioFast(const std::string &file_path)
+{
+    Logger::info("Processing audio with FAST mode (Chromaprint): " + file_path);
+    // TODO: IMPLEMENTATION - Chromaprint/AcoustID
+    // 1. Extract fingerprint using Chromaprint
+    // 2. Return binary artifact
+    std::vector<uint8_t> fingerprint_data(32, 0); // Placeholder
+    std::string hash = generateHash(fingerprint_data);
+    MediaArtifact artifact;
+    artifact.data = fingerprint_data;
+    artifact.format = "chromaprint";
+    artifact.hash = hash;
+    artifact.confidence = 0.80;
+    artifact.metadata = "{\"algorithm\":\"chromaprint\",\"mode\":\"FAST\"}";
+    ProcessingResult result(true);
+    result.artifact = artifact;
+    Logger::info("FAST mode audio processing completed for: " + file_path);
+    return result;
+}
+
+ProcessingResult MediaProcessor::processAudioBalanced(const std::string &file_path)
+{
+    Logger::info("Processing audio with BALANCED mode (Essentia MFCCs): " + file_path);
+    // TODO: IMPLEMENTATION - Essentia/LibROSA MFCCs
+    // 1. Extract MFCCs or spectral fingerprint
+    // 2. Return binary artifact
+    std::vector<uint8_t> mfcc_data(64, 0); // Placeholder
+    std::string hash = generateHash(mfcc_data);
+    MediaArtifact artifact;
+    artifact.data = mfcc_data;
+    artifact.format = "mfcc";
+    artifact.hash = hash;
+    artifact.confidence = 0.90;
+    artifact.metadata = "{\"algorithm\":\"mfcc\",\"mode\":\"BALANCED\"}";
+    ProcessingResult result(true);
+    result.artifact = artifact;
+    Logger::info("BALANCED mode audio processing completed for: " + file_path);
+    return result;
+}
+
+ProcessingResult MediaProcessor::processAudioQuality(const std::string &file_path)
+{
+    Logger::info("Processing audio with QUALITY mode (ONNX Runtime + VGGish/YAMNet/OpenL3): " + file_path);
+    // TODO: IMPLEMENTATION - ONNX Runtime + VGGish/YAMNet/OpenL3
+    // 1. Extract embedding vector
+    // 2. Return binary artifact
+    std::vector<uint8_t> embedding_data(128, 0); // Placeholder
+    std::string hash = generateHash(embedding_data);
+    MediaArtifact artifact;
+    artifact.data = embedding_data;
+    artifact.format = "audio_embedding";
+    artifact.hash = hash;
+    artifact.confidence = 0.97;
+    artifact.metadata = "{\"algorithm\":\"audio_embedding\",\"model\":\"VGGish/YAMNet/OpenL3\",\"mode\":\"QUALITY\"}";
+    ProcessingResult result(true);
+    result.artifact = artifact;
+    Logger::info("QUALITY mode audio processing completed for: " + file_path);
+    return result;
+}
+
 bool MediaProcessor::isImageFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    std::vector<std::string> image_extensions = {"jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp"};
-    return std::find(image_extensions.begin(), image_extensions.end(), ext) != image_extensions.end();
+    return std::find(image_extensions_.begin(), image_extensions_.end(), ext) != image_extensions_.end();
 }
 
 bool MediaProcessor::isVideoFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    std::vector<std::string> video_extensions = {"mp4", "avi", "mov", "mkv", "wmv", "flv", "webm", "m4v"};
-    return std::find(video_extensions.begin(), video_extensions.end(), ext) != video_extensions.end();
+    return std::find(video_extensions_.begin(), video_extensions_.end(), ext) != video_extensions_.end();
+}
+
+bool MediaProcessor::isAudioFile(const std::string &file_path)
+{
+    std::string ext = getFileExtension(file_path);
+    return std::find(audio_extensions_.begin(), audio_extensions_.end(), ext) != audio_extensions_.end();
 }
 
 std::string MediaProcessor::generateHash(const std::vector<uint8_t> &data)

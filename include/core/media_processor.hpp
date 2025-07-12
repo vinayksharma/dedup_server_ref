@@ -62,6 +62,9 @@ public:
      */
     static std::vector<std::string> getSupportedExtensions();
 
+    // Audio support
+    static bool isAudioFile(const std::string &file_path);
+
     // Move these to public for testing and utility
     static bool isImageFile(const std::string &file_path);
     static bool isVideoFile(const std::string &file_path);
@@ -69,6 +72,11 @@ public:
     static std::string getFileExtension(const std::string &file_path);
 
 private:
+    // Common extension lists
+    static const std::vector<std::string> image_extensions_;
+    static const std::vector<std::string> video_extensions_;
+    static const std::vector<std::string> audio_extensions_;
+
     /**
      * @brief Process image file using FAST mode (OpenCV dHash)
      * @param file_path Path to the image file
@@ -110,6 +118,11 @@ private:
      * @return ProcessingResult with video fingerprint artifact
      */
     static ProcessingResult processVideoQuality(const std::string &file_path);
+
+    // Audio processing methods
+    static ProcessingResult processAudioFast(const std::string &file_path);
+    static ProcessingResult processAudioBalanced(const std::string &file_path);
+    static ProcessingResult processAudioQuality(const std::string &file_path);
 };
 
 // TODO: IMPLEMENTATION NOTES

@@ -73,6 +73,17 @@ public:
                 {
             if (!AuthMiddleware::verify_auth(req, res, auth)) return;
             handleGetProcessingResults(req, res); });
+
+        // Scan endpoint
+        svr.Post("/scan", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleScan(req, res); });
+
+        svr.Get("/scan/results", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetScanResults(req, res); });
     }
 
 private:
@@ -387,6 +398,123 @@ private:
             Logger::error("Get processing results error: " + std::string(e.what()));
             res.status = 500;
             res.set_content(json{{"error", "Failed to retrieve processing results: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    // Scan handlers
+    static void handleScan(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received scan request");
+        try
+        {
+            auto body = json::parse(req.body);
+            std::string directory = body["directory"];
+            bool recursive = body.value("recursive", true);
+            std::string db_path = body.value("database_path", "scan_results.db");
+
+            Logger::info("Starting directory scan: " + directory);
+
+            // Use the existing FileUtils to scan directory recursively
+            auto observable = FileUtils::listFilesAsObservable(directory, recursive);
+
+            // Create DatabaseManager for storing scan results
+            DatabaseManager db_manager(db_path);
+
+            size_t files_scanned = 0;
+            std::string last_error;
+
+            observable.subscribe(
+                [&](const std::string &file_path)
+                {
+                    try
+                    {
+                        // Store file metadata in database (just name and path)
+                        if (db_manager.storeScannedFile(file_path))
+                        {
+                            files_scanned++;
+                            Logger::debug("Scanned file: " + file_path);
+                        }
+                        else
+                        {
+                            Logger::warn("Failed to store scanned file: " + file_path);
+                        }
+                    }
+                    catch (const std::exception &e)
+                    {
+                        last_error = e.what();
+                        Logger::error("Error processing scanned file: " + std::string(e.what()));
+                    }
+                },
+                [&](const std::exception &e)
+                {
+                    last_error = e.what();
+                    Logger::error("Scan error: " + std::string(e.what()));
+                    res.status = 500;
+                    res.set_content(json{{"error", "Directory scan failed: " + std::string(e.what())}}.dump(), "application/json");
+                },
+                [&]()
+                {
+                    Logger::info("Directory scan completed successfully");
+                    json response = {
+                        {"message", "Directory scan completed"},
+                        {"files_scanned", files_scanned},
+                        {"database_path", db_path}};
+
+                    if (!last_error.empty())
+                    {
+                        response["warning"] = "Some files had errors: " + last_error;
+                    }
+
+                    res.set_content(response.dump(), "application/json");
+                });
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Scan error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetScanResults(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get scan results request");
+        try
+        {
+            std::string db_path = req.get_param_value("database_path");
+            if (db_path.empty())
+            {
+                db_path = "scan_results.db";
+            }
+
+            // Create DatabaseManager and get scan results
+            DatabaseManager db_manager(db_path);
+            auto results = db_manager.getAllScannedFiles();
+
+            json response = {
+                {"total_files", results.size()},
+                {"database_path", db_path},
+                {"files", json::array()}};
+
+            // Add first 50 results to response
+            size_t limit = std::min(results.size(), size_t(50));
+            for (size_t i = 0; i < limit; ++i)
+            {
+                const auto &[file_path, file_name] = results[i];
+                json file_json = {
+                    {"file_path", file_path},
+                    {"file_name", file_name}};
+                response["files"].push_back(file_json);
+            }
+
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Scan results retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get scan results error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Failed to retrieve scan results: " + std::string(e.what())}}.dump(), "application/json");
         }
     }
 };

@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 
 using json = nlohmann::json;
 
@@ -377,4 +378,125 @@ ProcessingResult DatabaseManager::jsonToResult(const std::string &json_str)
     }
 
     return result;
+}
+
+bool DatabaseManager::storeScannedFile(const std::string &file_path)
+{
+    if (!db_)
+    {
+        Logger::error("Database not initialized");
+        return false;
+    }
+
+    // First, ensure the scanned_files table exists
+    const std::string create_table_sql = R"(
+        CREATE TABLE IF NOT EXISTS scanned_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            file_path TEXT NOT NULL UNIQUE,
+            file_name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    )";
+
+    if (!executeStatement(create_table_sql))
+    {
+        Logger::error("Failed to create scanned_files table");
+        return false;
+    }
+
+    // Extract file name from path
+    std::filesystem::path path(file_path);
+    std::string file_name = path.filename().string();
+
+    const std::string insert_sql = R"(
+        INSERT OR REPLACE INTO scanned_files (file_path, file_name)
+        VALUES (?, ?)
+    )";
+
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(db_, insert_sql.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK)
+    {
+        Logger::error("Failed to prepare statement: " + std::string(sqlite3_errmsg(db_)));
+        return false;
+    }
+
+    // Bind parameters
+    sqlite3_bind_text(stmt, 1, file_path.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, file_name.c_str(), -1, SQLITE_STATIC);
+
+    rc = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    if (rc != SQLITE_DONE)
+    {
+        Logger::error("Failed to insert scanned file: " + std::string(sqlite3_errmsg(db_)));
+        return false;
+    }
+
+    Logger::debug("Stored scanned file: " + file_path);
+    return true;
+}
+
+std::vector<std::pair<std::string, std::string>> DatabaseManager::getAllScannedFiles()
+{
+    std::vector<std::pair<std::string, std::string>> results;
+
+    if (!db_)
+    {
+        Logger::error("Database not initialized");
+        return results;
+    }
+
+    // Ensure the table exists
+    const std::string create_table_sql = R"(
+        CREATE TABLE IF NOT EXISTS scanned_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            file_path TEXT NOT NULL UNIQUE,
+            file_name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    )";
+
+    if (!executeStatement(create_table_sql))
+    {
+        Logger::error("Failed to create scanned_files table");
+        return results;
+    }
+
+    const std::string select_sql = R"(
+        SELECT file_path, file_name
+        FROM scanned_files 
+        ORDER BY created_at DESC
+    )";
+
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(db_, select_sql.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK)
+    {
+        Logger::error("Failed to prepare select statement: " + std::string(sqlite3_errmsg(db_)));
+        return results;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        std::string file_path = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0));
+        std::string file_name = reinterpret_cast<const char *>(sqlite3_column_text(stmt, 1));
+        results.emplace_back(file_path, file_name);
+    }
+
+    sqlite3_finalize(stmt);
+    return results;
+}
+
+bool DatabaseManager::clearAllScannedFiles()
+{
+    if (!db_)
+    {
+        Logger::error("Database not initialized");
+        return false;
+    }
+
+    const std::string delete_sql = "DELETE FROM scanned_files";
+    return executeStatement(delete_sql);
 }

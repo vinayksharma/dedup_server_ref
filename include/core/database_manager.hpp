@@ -13,7 +13,7 @@ class DatabaseManager
 {
 public:
     /**
-     * @brief Constructor - initializes database connection
+     * @brief Constructor - initializes database connection and tables
      * @param db_path Path to SQLite database file
      */
     explicit DatabaseManager(const std::string &db_path);
@@ -22,12 +22,6 @@ public:
      * @brief Destructor - closes database connection
      */
     ~DatabaseManager();
-
-    /**
-     * @brief Initialize database tables
-     * @return true if successful, false otherwise
-     */
-    bool initializeTables();
 
     /**
      * @brief Store media processing result
@@ -82,24 +76,13 @@ private:
     sqlite3 *db_;
     std::string db_path_;
 
-    /**
-     * @brief Execute SQL statement
-     * @param sql SQL statement to execute
-     * @return true if successful, false otherwise
-     */
+    // Initialization
+    void initialize();
+    bool createMediaProcessingResultsTable();
+    bool createScannedFilesTable();
+
+    // SQL helpers
     bool executeStatement(const std::string &sql);
-
-    /**
-     * @brief Convert ProcessingResult to JSON string for storage
-     * @param result Processing result to convert
-     * @return JSON string representation
-     */
     std::string resultToJson(const ProcessingResult &result);
-
-    /**
-     * @brief Convert JSON string back to ProcessingResult
-     * @param json_str JSON string to convert
-     * @return ProcessingResult object
-     */
     ProcessingResult jsonToResult(const std::string &json_str);
 };

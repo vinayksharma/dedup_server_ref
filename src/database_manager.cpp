@@ -20,6 +20,7 @@ DatabaseManager::DatabaseManager(const std::string &db_path)
     else
     {
         Logger::info("Database opened successfully: " + db_path);
+        initialize();
     }
 }
 
@@ -32,15 +33,22 @@ DatabaseManager::~DatabaseManager()
     }
 }
 
-bool DatabaseManager::initializeTables()
+void DatabaseManager::initialize()
+{
+    if (!createMediaProcessingResultsTable())
+        Logger::error("Failed to create media_processing_results table");
+    if (!createScannedFilesTable())
+        Logger::error("Failed to create scanned_files table");
+}
+
+bool DatabaseManager::createMediaProcessingResultsTable()
 {
     if (!db_)
     {
         Logger::error("Database not initialized");
         return false;
     }
-
-    const std::string create_table_sql = R"(
+    const std::string sql = R"(
         CREATE TABLE IF NOT EXISTS media_processing_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             file_path TEXT NOT NULL,
@@ -55,8 +63,25 @@ bool DatabaseManager::initializeTables()
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     )";
+    return executeStatement(sql);
+}
 
-    return executeStatement(create_table_sql);
+bool DatabaseManager::createScannedFilesTable()
+{
+    if (!db_)
+    {
+        Logger::error("Database not initialized");
+        return false;
+    }
+    const std::string sql = R"(
+        CREATE TABLE IF NOT EXISTS scanned_files (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            file_path TEXT NOT NULL UNIQUE,
+            file_name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    )";
+    return executeStatement(sql);
 }
 
 bool DatabaseManager::storeProcessingResult(const std::string &file_path,
@@ -388,22 +413,6 @@ bool DatabaseManager::storeScannedFile(const std::string &file_path)
         return false;
     }
 
-    // First, ensure the scanned_files table exists
-    const std::string create_table_sql = R"(
-        CREATE TABLE IF NOT EXISTS scanned_files (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_path TEXT NOT NULL UNIQUE,
-            file_name TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    )";
-
-    if (!executeStatement(create_table_sql))
-    {
-        Logger::error("Failed to create scanned_files table");
-        return false;
-    }
-
     // Extract file name from path
     std::filesystem::path path(file_path);
     std::string file_name = path.filename().string();
@@ -445,22 +454,6 @@ std::vector<std::pair<std::string, std::string>> DatabaseManager::getAllScannedF
     if (!db_)
     {
         Logger::error("Database not initialized");
-        return results;
-    }
-
-    // Ensure the table exists
-    const std::string create_table_sql = R"(
-        CREATE TABLE IF NOT EXISTS scanned_files (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_path TEXT NOT NULL UNIQUE,
-            file_name TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    )";
-
-    if (!executeStatement(create_table_sql))
-    {
-        Logger::error("Failed to create scanned_files table");
         return results;
     }
 

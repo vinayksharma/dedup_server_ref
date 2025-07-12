@@ -6,13 +6,6 @@ FileProcessor::FileProcessor(const std::string &db_path)
     : total_files_processed_(0), successful_files_processed_(0)
 {
     db_manager_ = std::make_unique<DatabaseManager>(db_path);
-
-    if (!db_manager_->initializeTables())
-    {
-        Logger::error("Failed to initialize database tables");
-        throw std::runtime_error("Database initialization failed");
-    }
-
     Logger::info("FileProcessor initialized with database: " + db_path);
 }
 

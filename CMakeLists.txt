@@ -52,6 +52,7 @@ set(SOURCES
     src/auth.cpp
     src/file_utils.cpp
     src/server_config_manager.cpp
+    src/media_processor.cpp
 )
 
 # Add header files
@@ -62,6 +63,7 @@ set(HEADERS
     include/core/file_utils.hpp
     include/core/dedup_modes.hpp
     include/core/server_config_manager.hpp
+    include/core/media_processor.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
     include/web/route_handlers.hpp
@@ -116,4 +118,20 @@ FetchContent_MakeAvailable(spdlog)
 
 # Tests
 enable_testing()
-add_subdirectory(tests) 
+add_subdirectory(tests)
+
+# Add MediaProcessor example
+add_executable(media_processor_example examples/media_processor_example.cpp src/media_processor.cpp src/server_config_manager.cpp)
+target_include_directories(media_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(media_processor_example
+    PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    pthread
+    ${OpenCV_LIBS}
+    PkgConfig::FFMPEG
+    $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
+    $<$<BOOL:${ONNXRUNTIME_FOUND}>:PkgConfig::ONNXRUNTIME>
+) 

@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenSSL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+# Find SQLite3
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET sqlite3)
+
 # TODO: DEDUP MODES - Libraries for different deduplication modes
 # FAST MODE: OpenCV (dHash) + FFmpeg
 # BALANCED MODE: libvips + OpenCV (pHash) + FFmpeg  
@@ -44,6 +48,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include/logging
     ${CMAKE_SOURCE_DIR}/include/third_party
     ${OPENSSL_INCLUDE_DIR}
+    ${nlohmann_json_INCLUDE_DIRS}
 )
 
 # Add source files
@@ -53,6 +58,8 @@ set(SOURCES
     src/file_utils.cpp
     src/server_config_manager.cpp
     src/media_processor.cpp
+    src/database_manager.cpp
+    src/file_processor.cpp
 )
 
 # Add header files
@@ -64,6 +71,8 @@ set(HEADERS
     include/core/dedup_modes.hpp
     include/core/server_config_manager.hpp
     include/core/media_processor.hpp
+    include/core/database_manager.hpp
+    include/core/file_processor.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
     include/web/route_handlers.hpp
@@ -81,6 +90,7 @@ target_link_libraries(dedup_server
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     pthread
+    PkgConfig::SQLITE3
     # TODO: DEDUP MODES - Link libraries for different modes
     # FAST MODE: OpenCV + FFmpeg
     # BALANCED MODE: libvips + OpenCV + FFmpeg
@@ -130,6 +140,26 @@ target_link_libraries(media_processor_example
     nlohmann_json::nlohmann_json
     spdlog::spdlog
     pthread
+    PkgConfig::SQLITE3
+    ${OpenCV_LIBS}
+    PkgConfig::FFMPEG
+    $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
+    $<$<BOOL:${ONNXRUNTIME_FOUND}>:PkgConfig::ONNXRUNTIME>
+)
+
+# Add FileProcessor example
+add_executable(file_processor_example examples/file_processor_example.cpp 
+               src/media_processor.cpp src/server_config_manager.cpp 
+               src/database_manager.cpp src/file_processor.cpp src/file_utils.cpp)
+target_include_directories(file_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(file_processor_example
+    PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    pthread
+    PkgConfig::SQLITE3
     ${OpenCV_LIBS}
     PkgConfig::FFMPEG
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>

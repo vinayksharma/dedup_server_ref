@@ -5,6 +5,8 @@
 #include "core/status.hpp"
 #include "core/file_utils.hpp"
 #include "core/server_config_manager.hpp"
+#include "core/file_processor.hpp"
+#include "core/database_manager.hpp"
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
 #include "logging/logger.hpp"
@@ -55,6 +57,22 @@ public:
                  {
             if (!AuthMiddleware::verify_auth(req, res, auth)) return;
             handleSaveConfig(req, res); });
+
+        // File processing endpoints
+        svr.Post("/process/directory", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleProcessDirectory(req, res); });
+
+        svr.Post("/process/file", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleProcessFile(req, res); });
+
+        svr.Get("/process/results", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetProcessingResults(req, res); });
     }
 
 private:
@@ -248,6 +266,127 @@ private:
             Logger::error("Save config error: " + std::string(e.what()));
             res.status = 400;
             res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    // File processing handlers
+    static void handleProcessDirectory(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received process directory request");
+        try
+        {
+            auto body = json::parse(req.body);
+            std::string directory = body["directory"];
+            bool recursive = body.value("recursive", true);
+            std::string db_path = body.value("database_path", "processing_results.db");
+
+            Logger::info("Starting directory processing: " + directory);
+
+            // Create FileProcessor and process directory
+            FileProcessor processor(db_path);
+            size_t files_processed = processor.processDirectory(directory, recursive);
+            auto stats = processor.getProcessingStats();
+
+            json response = {
+                {"message", "Directory processing completed"},
+                {"files_processed", files_processed},
+                {"total_files", stats.first},
+                {"successful_files", stats.second},
+                {"database_path", db_path}};
+
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Directory processing completed successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Process directory error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Directory processing failed: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleProcessFile(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received process file request");
+        try
+        {
+            auto body = json::parse(req.body);
+            std::string file_path = body["file_path"];
+            std::string db_path = body.value("database_path", "processing_results.db");
+
+            Logger::info("Processing single file: " + file_path);
+
+            // Create FileProcessor and process file
+            FileProcessor processor(db_path);
+            bool success = processor.processFile(file_path);
+
+            json response = {
+                {"success", success},
+                {"file_path", file_path},
+                {"database_path", db_path}};
+
+            if (success)
+            {
+                res.set_content(response.dump(), "application/json");
+                Logger::info("File processing completed successfully");
+            }
+            else
+            {
+                res.status = 400;
+                res.set_content(response.dump(), "application/json");
+            }
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Process file error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "File processing failed: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetProcessingResults(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get processing results request");
+        try
+        {
+            std::string db_path = req.get_param_value("database_path");
+            if (db_path.empty())
+            {
+                db_path = "processing_results.db";
+            }
+
+            // Create DatabaseManager and get results
+            DatabaseManager db_manager(db_path);
+            auto results = db_manager.getAllProcessingResults();
+
+            json response = {
+                {"total_results", results.size()},
+                {"database_path", db_path},
+                {"results", json::array()}};
+
+            // Add first 10 results to response
+            size_t limit = std::min(results.size(), size_t(10));
+            for (size_t i = 0; i < limit; ++i)
+            {
+                const auto &[file_path, result] = results[i];
+                json result_json = {
+                    {"file_path", file_path},
+                    {"success", result.success},
+                    {"format", result.artifact.format},
+                    {"hash", result.artifact.hash},
+                    {"confidence", result.artifact.confidence},
+                    {"data_size", result.artifact.data.size()}};
+                response["results"].push_back(result_json);
+            }
+
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Processing results retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get processing results error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Failed to retrieve processing results: " + std::string(e.what())}}.dump(), "application/json");
         }
     }
 };

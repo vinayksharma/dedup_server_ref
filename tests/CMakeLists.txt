@@ -3,9 +3,13 @@ add_executable(dedup_tests
     auth_test.cpp
     file_utils_test.cpp
     media_processor_test.cpp
+    file_processor_test.cpp
     ../src/auth.cpp
     ../src/file_utils.cpp
     ../src/media_processor.cpp
+    ../src/database_manager.cpp
+    ../src/file_processor.cpp
+    ../src/server_config_manager.cpp
 )
 
 target_include_directories(dedup_tests PRIVATE
@@ -19,6 +23,7 @@ target_link_libraries(dedup_tests PRIVATE
     OpenSSL::Crypto
     nlohmann_json::nlohmann_json
     spdlog::spdlog
+    PkgConfig::SQLITE3
 )
 
 include(GoogleTest)

@@ -1,0 +1,78 @@
+#pragma once
+
+#include <string>
+#include <memory>
+#include "file_utils.hpp"
+#include "media_processor.hpp"
+#include "database_manager.hpp"
+#include "server_config_manager.hpp"
+
+/**
+ * @brief File processor that integrates file scanning, media processing, and database storage
+ *
+ * This class observes file names emitted by FileUtils::listFilesInternal,
+ * processes them with MediaProcessor using the current quality setting,
+ * and stores the results in a SQLite database.
+ */
+class FileProcessor
+{
+public:
+    /**
+     * @brief Constructor
+     * @param db_path Path to SQLite database file
+     */
+    explicit FileProcessor(const std::string &db_path);
+
+    /**
+     * @brief Destructor
+     */
+    ~FileProcessor() = default;
+
+    /**
+     * @brief Process all files in a directory with current quality settings
+     * @param dir_path Directory path to scan
+     * @param recursive Whether to scan recursively
+     * @return Number of files processed
+     */
+    size_t processDirectory(const std::string &dir_path, bool recursive = true);
+
+    /**
+     * @brief Process a single file with current quality settings
+     * @param file_path Path to file to process
+     * @return true if successful, false otherwise
+     */
+    bool processFile(const std::string &file_path);
+
+    /**
+     * @brief Get processing statistics
+     * @return Pair of (total_files, successful_files)
+     */
+    std::pair<size_t, size_t> getProcessingStats() const;
+
+    /**
+     * @brief Clear processing statistics
+     */
+    void clearStats();
+
+private:
+    std::unique_ptr<DatabaseManager> db_manager_;
+    size_t total_files_processed_;
+    size_t successful_files_processed_;
+
+    /**
+     * @brief Handle a single file from the file stream
+     * @param file_path Path to the file
+     */
+    void handleFile(const std::string &file_path);
+
+    /**
+     * @brief Handle processing errors
+     * @param error Exception that occurred
+     */
+    void handleError(const std::exception &error);
+
+    /**
+     * @brief Handle completion of file processing
+     */
+    void handleComplete();
+};

@@ -349,6 +349,101 @@ public:
           }
         }
       }
+    },
+    "/scan": {
+      "post": {
+        "summary": "Scan a directory and store file metadata",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "directory": {
+                    "type": "string",
+                    "description": "Directory path to scan"
+                  },
+                  "recursive": {
+                    "type": "boolean",
+                    "description": "Whether to scan recursively",
+                    "default": true
+                  },
+                  "database_path": {
+                    "type": "string",
+                    "description": "Path to the scan results database file",
+                    "default": "scan_results.db"
+                  }
+                },
+                "required": ["directory"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Directory scan completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "files_scanned": { "type": "integer" },
+                    "database_path": { "type": "string" },
+                    "warning": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Directory scan failed" }
+        }
+      }
+    },
+    "/scan/results": {
+      "get": {
+        "summary": "Get scanned file metadata from the database",
+        "parameters": [
+          {
+            "name": "database_path",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "default": "scan_results.db" },
+            "description": "Path to the scan results database file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scan results retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_files": { "type": "integer" },
+                    "database_path": { "type": "string" },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "file_path": { "type": "string" },
+                          "file_name": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Failed to retrieve scan results" }
+        }
+      }
     }
   }
 })";

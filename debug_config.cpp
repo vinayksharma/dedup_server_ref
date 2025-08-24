@@ -1,1 +1,21 @@
-int main() { auto& config = ServerConfigManager::getInstance(); config.loadConfig("config.json"); auto img = config.getEnabledImageExtensions(); auto vid = config.getEnabledVideoExtensions(); auto aud = config.getEnabledAudioExtensions(); std::cout << "Image extensions: "; for(auto& ext : img) std::cout << ext << " "; std::cout << std::endl; std::cout << "Video extensions: "; for(auto& ext : vid) std::cout << ext << " "; std::cout << std::endl; std::cout << "Audio extensions: "; for(auto& ext : aud) std::cout << ext << " "; std::cout << std::endl; return 0; }
+int main()
+{
+    auto &config = PocoConfigAdapter::getInstance();
+    config.loadConfig("config.json");
+    auto img = config.getEnabledImageExtensions();
+    auto vid = config.getEnabledVideoExtensions();
+    auto aud = config.getEnabledAudioExtensions();
+    std::cout << "Image extensions: ";
+    for (auto &ext : img)
+        std::cout << ext << " ";
+    std::cout << std::endl;
+    std::cout << "Video extensions: ";
+    for (auto &ext : vid)
+        std::cout << ext << " ";
+    std::cout << std::endl;
+    std::cout << "Audio extensions: ";
+    for (auto &ext : aud)
+        std::cout << ext << " ";
+    std::cout << std::endl;
+    return 0;
+}

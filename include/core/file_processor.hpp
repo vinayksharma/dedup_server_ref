@@ -7,7 +7,7 @@
 #include "file_utils.hpp"
 #include "media_processor.hpp"
 #include "poco_config_adapter.hpp"
-#include "server_config_manager.hpp"
+#include "config_observer.hpp"
 
 /**
  * @brief Result of a file processing operation

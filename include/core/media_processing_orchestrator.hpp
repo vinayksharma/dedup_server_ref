@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <shared_mutex>
 #include "file_utils.hpp"
-#include "server_config_manager.hpp"
+#include "config_observer.hpp"
 
 struct FileProcessingEvent
 {

@@ -250,13 +250,13 @@ void DuplicateLinker::onConfigChanged(const ConfigEvent &event)
     if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
     {
         std::cout << "[CONFIG CHANGE] DuplicateLinker: Deduplication mode changed from " +
-                         event.old_value.as<std::string>() + " to " +
-                         event.new_value.as<std::string>() + " - will use new mode for future linking"
+                         event.old_value + " to " +
+                         event.new_value + " - will use new mode for future linking"
                   << std::endl;
 
         Logger::info("DuplicateLinker: Deduplication mode changed from " +
-                     event.old_value.as<std::string>() + " to " +
-                     event.new_value.as<std::string>() + " - will use new mode for future linking");
+                     event.old_value + " to " +
+                     event.new_value + " - will use new mode for future linking");
 
         // Request a full rescan when mode changes to ensure links are updated for the new mode
         requestFullRescan();

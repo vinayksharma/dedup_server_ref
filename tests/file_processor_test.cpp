@@ -1,7 +1,7 @@
 #include "core/file_processor.hpp"
 #include "core/file_scanner.hpp"
 #include "database/database_manager.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "test_base.hpp"
 #include <filesystem>
 #include <fstream>
@@ -177,7 +177,7 @@ TEST_F(FileProcessorTest, QualityModeIntegration)
     FileProcessor processor(test_db_);
 
     // Get current quality mode
-    auto &config_manager = ServerConfigManager::getInstance();
+    auto &config_manager = PocoConfigAdapter::getInstance();
     auto current_mode = config_manager.getDedupMode();
 
     // First scan the file

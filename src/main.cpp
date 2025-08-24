@@ -7,7 +7,7 @@
 #include "auth/auth.hpp"
 #include "logging/logger.hpp"
 #include "database/database_manager.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/config_observer.hpp"
 #include "core/server_config.hpp"
 #include "core/poco_config_adapter.hpp"
 #include "core/simple_scheduler.hpp"

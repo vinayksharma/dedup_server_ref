@@ -24,7 +24,7 @@ add_executable(dedup_tests
     ../src/duplicate_linker.cpp
     ../src/file_processor.cpp
     ../src/file_scanner.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
@@ -62,7 +62,7 @@ add_executable(media_processing_orchestrator_test
     media_processing_orchestrator_test.cpp
     ../src/database/database_manager.cpp
     ../src/media_processing_orchestrator.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
     ../src/file_utils.cpp
@@ -106,7 +106,7 @@ add_executable(cache_size_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -138,7 +138,7 @@ add_executable(smart_cache_cleanup_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -170,7 +170,7 @@ add_executable(raw_file_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -198,7 +198,24 @@ target_link_libraries(raw_file_test PRIVATE
 
 add_executable(file_type_config_test
     integration/file_type_config_test.cpp
-    ../src/server_config_manager.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(file_type_config_test PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 # Media processing tests
@@ -206,7 +223,7 @@ add_executable(media_processor_example
     integration/media_processor_example.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/poco_config_adapter.cpp
     ../src/poco_config_manager.cpp
@@ -234,7 +251,7 @@ add_executable(file_processor_example
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    ../src/server_config_manager.cpp
+    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -268,12 +285,46 @@ add_executable(file_utils_example
 
 add_executable(debug_config
     integration/debug_config.cpp
-    ../src/server_config_manager.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(debug_config PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_executable(test_mode_change
     integration/test_mode_change.cpp
-    ../src/server_config_manager.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(test_mode_change PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_executable(migrate_to_relative_paths

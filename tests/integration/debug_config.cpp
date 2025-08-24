@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../../include/core/server_config_manager.hpp"
+#include "../../include/core/poco_config_adapter.hpp"
 #include "../../include/core/dedup_modes.hpp"
 #include "../../include/logging/logger.hpp"
 
@@ -10,14 +10,14 @@ int main()
     Logger::init();
 
     // Get current dedup mode
-    auto &config_manager = ServerConfigManager::getInstance();
+    auto &config_manager = PocoConfigAdapter::getInstance();
     auto current_mode = config_manager.getDedupMode();
     std::string mode_name = DedupModes::getModeName(current_mode);
     Logger::info("Current dedup mode: " + mode_name);
 
     // Check raw config
-    YAML::Node config = config_manager.getConfig();
-    Logger::info("Raw config dedup_mode: " + config["dedup_mode"].as<std::string>());
+    auto config_json = config_manager.getAll();
+    Logger::info("Raw config dedup_mode: " + config_json["dedup_mode"].get<std::string>());
 
     // Try to read config.json if it exists
     std::ifstream config_file("config.json");

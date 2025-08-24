@@ -1,5 +1,5 @@
 #include "core/file_processor.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <iostream>
 #include <iomanip>
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     try
     {
         // Initialize configuration manager
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
 
         // Display current quality mode
         auto current_mode = config_manager.getDedupMode();

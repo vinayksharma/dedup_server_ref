@@ -7,7 +7,7 @@
 #include <chrono>
 #include <fstream>
 #include "database/database_manager.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 
 /**
@@ -43,8 +43,8 @@ protected:
         // Initialize DatabaseManager with the test path
         DatabaseManager::getInstance(test_db_path_);
 
-        // Initialize ServerConfigManager for tests
-        ServerConfigManager::getInstance().loadConfig("config.yaml"); // Load default config for tests
+        // Initialize PocoConfigAdapter for tests
+        PocoConfigAdapter::getInstance().loadConfig("config.json"); // Load default config for tests
 
         Logger::info("TestBase SetUp completed for test: " + std::string(::testing::UnitTest::GetInstance()->current_test_info()->name()));
     }

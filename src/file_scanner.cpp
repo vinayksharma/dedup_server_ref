@@ -4,7 +4,7 @@
 #include "core/file_utils.hpp"
 #include "core/transcoding_manager.hpp"
 #include "logging/logger.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/config_observer.hpp"
 
 FileScanner::FileScanner(const std::string &db_path)
     : files_scanned_(0), files_stored_(0), files_skipped_(0)

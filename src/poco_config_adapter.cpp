@@ -5,31 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-
-// Forward declarations for ConfigEvent and ConfigObserver
-struct ConfigEvent
-{
-    enum Type
-    {
-        DEDUP_MODE_CHANGED,
-        LOG_LEVEL_CHANGED,
-        SERVER_PORT_CHANGED,
-        AUTH_SECRET_CHANGED,
-        GENERAL_CONFIG_CHANGED
-    };
-    Type type;
-    std::string key;
-    std::string old_value;
-    std::string new_value;
-    std::string description;
-};
-
-class ConfigObserver
-{
-public:
-    virtual ~ConfigObserver() = default;
-    virtual void onConfigChanged(const ConfigEvent &event) = 0;
-};
+#include "core/config_observer.hpp"
 
 PocoConfigAdapter::PocoConfigAdapter()
     : poco_cfg_(PocoConfigManager::getInstance())
@@ -248,7 +224,7 @@ void PocoConfigAdapter::setDedupMode(DedupMode mode)
 
     // Publish event
     ConfigEvent event;
-    event.type = ConfigEvent::DEDUP_MODE_CHANGED;
+    event.type = ConfigEventType::DEDUP_MODE_CHANGED;
     event.key = "dedup_mode";
     event.old_value = old_mode;
     event.new_value = new_mode;
@@ -266,7 +242,7 @@ void PocoConfigAdapter::setLogLevel(const std::string &level)
 
     // Publish event
     ConfigEvent event;
-    event.type = ConfigEvent::LOG_LEVEL_CHANGED;
+    event.type = ConfigEventType::LOG_LEVEL_CHANGED;
     event.key = "log_level";
     event.old_value = old_level;
     event.new_value = level;
@@ -284,7 +260,7 @@ void PocoConfigAdapter::setServerPort(int port)
 
     // Publish event
     ConfigEvent event;
-    event.type = ConfigEvent::SERVER_PORT_CHANGED;
+    event.type = ConfigEventType::SERVER_PORT_CHANGED;
     event.key = "server_port";
     event.old_value = std::to_string(old_port);
     event.new_value = std::to_string(port);
@@ -302,7 +278,7 @@ void PocoConfigAdapter::setAuthSecret(const std::string &secret)
 
     // Publish event
     ConfigEvent event;
-    event.type = ConfigEvent::AUTH_SECRET_CHANGED;
+    event.type = ConfigEventType::AUTH_SECRET_CHANGED;
     event.key = "auth_secret";
     event.old_value = old_secret;
     event.new_value = secret;
@@ -324,7 +300,7 @@ void PocoConfigAdapter::updateConfig(const std::string &json_config)
 
         // Publish general config changed event
         ConfigEvent event;
-        event.type = ConfigEvent::GENERAL_CONFIG_CHANGED;
+        event.type = ConfigEventType::GENERAL_CONFIG_CHANGED;
         event.key = "configuration";
         event.old_value = "";
         event.new_value = json_config;
@@ -371,7 +347,7 @@ void PocoConfigAdapter::startWatching(const std::string &file_path, int interval
                     if (poco_cfg_.load(watched_file_path_)) {
                         // Publish reload event
                         ConfigEvent event;
-                        event.type = ConfigEvent::GENERAL_CONFIG_CHANGED;
+                        event.type = ConfigEventType::GENERAL_CONFIG_CHANGED;
                         event.key = "configuration";
                         event.old_value = "";
                         event.new_value = "reloaded";

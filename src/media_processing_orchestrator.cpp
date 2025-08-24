@@ -364,16 +364,16 @@ void MediaProcessingOrchestrator::onConfigChanged(const ConfigEvent &event)
     if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
     {
         std::cout << "[CONFIG CHANGE] MediaProcessingOrchestrator: Deduplication mode changed from " +
-                         event.old_value.as<std::string>() + " to " +
-                         event.new_value.as<std::string>() + " - will use new mode for future processing"
+                         event.old_value + " to " +
+                         event.new_value + " - will use new mode for future processing"
                   << std::endl;
 
         Logger::info("MediaProcessingOrchestrator: Deduplication mode changed from " +
-                     event.old_value.as<std::string>() + " to " +
-                     event.new_value.as<std::string>() + " - will use new mode for future processing");
+                     event.old_value + " to " +
+                     event.new_value + " - will use new mode for future processing");
 
         // Note: We don't need to restart processing here since each processing run
-        // queries the current mode via ServerConfigManager::getInstance().getDedupMode()
+        // queries the current mode via PocoConfigAdapter::getInstance().getDedupMode()
         // This ensures that new processing runs will use the updated mode
     }
 }

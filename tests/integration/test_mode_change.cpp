@@ -1,7 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "../../include/core/server_config_manager.hpp"
+#include "../../include/core/poco_config_adapter.hpp"
+#include "../../include/core/config_observer.hpp"
 #include "../../include/core/dedup_modes.hpp"
 #include "../../include/logging/logger.hpp"
 
@@ -14,8 +15,8 @@ public:
         {
             std::cout << "=== CONFIG CHANGE DETECTED ===" << std::endl;
             std::cout << "Event: " << event.description << std::endl;
-            std::cout << "Old value: " << event.old_value.as<std::string>() << std::endl;
-            std::cout << "New value: " << event.new_value.as<std::string>() << std::endl;
+            std::cout << "Old value: " << event.old_value << std::endl;
+            std::cout << "New value: " << event.new_value << std::endl;
             std::cout << "=============================" << std::endl;
         }
     }
@@ -29,7 +30,7 @@ int main()
     std::cout << "=== Testing Deduplication Mode Change Detection ===" << std::endl;
 
     // Get current dedup mode
-    auto &config_manager = ServerConfigManager::getInstance();
+    auto &config_manager = PocoConfigAdapter::getInstance();
     auto current_mode = config_manager.getDedupMode();
     std::string mode_name = DedupModes::getModeName(current_mode);
     std::cout << "Current dedup mode: " << mode_name << std::endl;
@@ -40,8 +41,8 @@ int main()
     std::cout << "Subscribed to configuration changes" << std::endl;
 
     // Start watching config file
-    config_manager.startWatching("config.yaml", 1);
-    std::cout << "Started watching config.yaml" << std::endl;
+    config_manager.startWatching("config.json", 1);
+    std::cout << "Started watching config.json" << std::endl;
 
     // Test 1: Change mode via API
     std::cout << "\n=== Test 1: Changing mode via API ===" << std::endl;
@@ -105,7 +106,7 @@ int main()
 
     // Stop watching
     config_manager.stopWatching();
-    std::cout << "\nStopped watching config.yaml" << std::endl;
+    std::cout << "\nStopped watching config.json" << std::endl;
 
     std::cout << "\n=== Test Complete ===" << std::endl;
     return 0;

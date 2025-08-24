@@ -3,7 +3,7 @@
 #include "database/database_manager.hpp"
 #include "database/db_performance_logger.hpp"
 #include "core/media_processing_orchestrator.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/config_observer.hpp"
 #include "logging/logger.hpp"
 #include <httplib.h>
 #include <nlohmann/json.hpp>

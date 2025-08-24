@@ -70,6 +70,8 @@ add_executable(media_processing_orchestrator_test
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/transcoding_manager.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
 )
 
 target_link_libraries(media_processing_orchestrator_test
@@ -87,6 +89,9 @@ target_link_libraries(media_processing_orchestrator_test
     PkgConfig::LIBRAW
     yaml-cpp
     TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_test(NAME MediaProcessingOrchestratorTest COMMAND media_processing_orchestrator_test)
@@ -108,6 +113,24 @@ add_executable(cache_size_test
     ../src/file_processor.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(cache_size_test PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_executable(smart_cache_cleanup_test
@@ -121,6 +144,24 @@ add_executable(smart_cache_cleanup_test
     ../src/database/database_manager.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(smart_cache_cleanup_test PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 # File processing tests
@@ -135,6 +176,24 @@ add_executable(raw_file_test
     ../src/database/database_manager.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(raw_file_test PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_executable(file_type_config_test
@@ -149,6 +208,24 @@ add_executable(media_processor_example
     ../src/core/memory_pool.cpp
     ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(media_processor_example PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 add_executable(file_processor_example
@@ -163,6 +240,24 @@ add_executable(file_processor_example
     ../src/database/database_manager.cpp
     ../src/database/db_performance_logger.cpp
     ../src/file_utils.cpp
+    ../src/poco_config_adapter.cpp
+    ../src/poco_config_manager.cpp
+)
+
+target_link_libraries(file_processor_example PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    nlohmann_json::nlohmann_json
+    spdlog::spdlog
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    ${FFMPEG_LIBRARIES}
+    PkgConfig::LIBRAW
+    yaml-cpp
+    TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 # Utility tests

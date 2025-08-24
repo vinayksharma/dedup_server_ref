@@ -10,7 +10,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
+#include "yaml-cpp/yaml.h"
 
 // FFmpeg headers for video processing
 extern "C"
@@ -79,7 +80,7 @@ ProcessingResult MediaProcessor::processFile(const std::string &file_path, Dedup
         try
         {
             std::string ext = getFileExtension(file_path);
-            auto &config = ServerConfigManager::getInstance();
+            auto &config = PocoConfigAdapter::getInstance();
             auto img_exts = config.getEnabledImageExtensions();
             auto vid_exts = config.getEnabledVideoExtensions();
             auto aud_exts = config.getEnabledAudioExtensions();
@@ -172,12 +173,12 @@ bool MediaProcessor::isSupportedFile(const std::string &file_path)
 }
 
 // Static extension lists - now configuration-driven
-// These are no longer used as we use ServerConfigManager::getEnabledFileTypes()
+// These are no longer used as we use PocoConfigAdapter::getEnabledFileTypes()
 
 std::vector<std::string> MediaProcessor::getSupportedExtensions()
 {
-    // Use ServerConfigManager to get enabled file types
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+    // Use PocoConfigAdapter to get enabled file types
+    auto enabled_types = PocoConfigAdapter::getInstance().getEnabledFileTypes();
     return enabled_types;
 }
 
@@ -588,7 +589,7 @@ ProcessingResult MediaProcessor::processVideoFast(const std::string &file_path)
         double time_base = av_q2d(video_stream->time_base);
         double fps = av_q2d(video_stream->r_frame_rate);
         Logger::info("Video info - Duration: " + std::to_string(duration) + ", FPS: " + std::to_string(fps));
-        const auto &config = ServerConfigManager::getInstance();
+        const auto &config = PocoConfigAdapter::getInstance();
         int skip_duration = config.getVideoSkipDurationSeconds(DedupMode::FAST);
         int frames_per_skip = config.getVideoFramesPerSkip(DedupMode::FAST);
         int skip_count = config.getVideoSkipCount(DedupMode::FAST);
@@ -831,7 +832,7 @@ ProcessingResult MediaProcessor::processVideoBalanced(const std::string &file_pa
         double time_base = av_q2d(video_stream->time_base);
         double fps = av_q2d(video_stream->r_frame_rate);
         Logger::info("Video info - Duration: " + std::to_string(duration) + ", FPS: " + std::to_string(fps));
-        const auto &config = ServerConfigManager::getInstance();
+        const auto &config = PocoConfigAdapter::getInstance();
         int skip_duration = config.getVideoSkipDurationSeconds(DedupMode::BALANCED);
         int frames_per_skip = config.getVideoFramesPerSkip(DedupMode::BALANCED);
         int skip_count = config.getVideoSkipCount(DedupMode::BALANCED);
@@ -1074,7 +1075,7 @@ ProcessingResult MediaProcessor::processVideoQuality(const std::string &file_pat
         double time_base = av_q2d(video_stream->time_base);
         double fps = av_q2d(video_stream->r_frame_rate);
         Logger::info("Video info - Duration: " + std::to_string(duration) + ", FPS: " + std::to_string(fps));
-        const auto &config = ServerConfigManager::getInstance();
+        const auto &config = PocoConfigAdapter::getInstance();
         int skip_duration = config.getVideoSkipDurationSeconds(DedupMode::QUALITY);
         int frames_per_skip = config.getVideoFramesPerSkip(DedupMode::QUALITY);
         int skip_count = config.getVideoSkipCount(DedupMode::QUALITY);
@@ -1647,21 +1648,21 @@ ProcessingResult MediaProcessor::processAudioQuality(const std::string &file_pat
 bool MediaProcessor::isImageFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledImageExtensions();
+    auto enabled_types = PocoConfigAdapter::getInstance().getEnabledImageExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 
 bool MediaProcessor::isVideoFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledVideoExtensions();
+    auto enabled_types = PocoConfigAdapter::getInstance().getEnabledVideoExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 
 bool MediaProcessor::isAudioFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledAudioExtensions();
+    auto enabled_types = PocoConfigAdapter::getInstance().getEnabledAudioExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 

@@ -39,14 +39,29 @@ PocoConfigAdapter::PocoConfigAdapter()
     // Initialize with default config from Poco
     initializeDefaultConfig();
 
-    // Try to load existing config.json if it exists
+    // Try to load existing config.json first (primary source)
     if (poco_cfg_.load("config.json"))
     {
-        Logger::info("Configuration loaded from config.json");
+        Logger::info("Configuration loaded from config.json (primary source)");
+    }
+    // Fall back to config.yaml if config.json doesn't exist
+    else if (poco_cfg_.load("config.yaml"))
+    {
+        Logger::info("Configuration loaded from config.yaml (fallback)");
+        // Save the YAML config as JSON for future use
+        if (poco_cfg_.save("config.json"))
+        {
+            Logger::info("Migrated config.yaml to config.json");
+        }
     }
     else
     {
-        Logger::info("No existing config.json found, using defaults");
+        Logger::info("No existing configuration files found, using defaults");
+        // Save the default configuration as JSON
+        if (poco_cfg_.save("config.json"))
+        {
+            Logger::info("Created new config.json with default values");
+        }
     }
 }
 
@@ -407,12 +422,30 @@ void PocoConfigAdapter::unsubscribe(ConfigObserver *observer)
 // Configuration persistence
 bool PocoConfigAdapter::loadConfig(const std::string &file_path)
 {
+    // If loading from YAML, migrate to JSON
+    if (file_path.find(".yaml") != std::string::npos || file_path.find(".yml") != std::string::npos)
+    {
+        if (poco_cfg_.load(file_path))
+        {
+            Logger::info("Loaded configuration from " + file_path);
+            // Migrate to JSON
+            if (poco_cfg_.save("config.json"))
+            {
+                Logger::info("Migrated configuration from " + file_path + " to config.json");
+            }
+            return true;
+        }
+        return false;
+    }
+
     return poco_cfg_.load(file_path);
 }
 
 bool PocoConfigAdapter::saveConfig(const std::string &file_path) const
 {
-    return poco_cfg_.save(file_path);
+    // If no file path specified, default to config.json
+    std::string target_path = file_path.empty() ? "config.json" : file_path;
+    return poco_cfg_.save(target_path);
 }
 
 // Configuration validation

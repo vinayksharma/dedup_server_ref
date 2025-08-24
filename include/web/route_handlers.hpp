@@ -750,7 +750,7 @@ private:
             std::string db_path = body.value("database_path", "scan_results.db");
 
             // Get thread configuration from config manager
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             int max_threads = config_manager.getMaxProcessingThreads();
 
             Logger::info("Starting orchestration with TPM interval: " + std::to_string(processing_interval_seconds) + " seconds");
@@ -1094,18 +1094,16 @@ private:
         try
         {
             auto body = nlohmann::json::parse(req.body);
-            // Convert JSON to YAML::Node
-            YAML::Node yaml_body = YAML::Load(body.dump());
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             // Validate the configuration
-            if (!config_manager.validateProcessingConfig(yaml_body))
+            if (!config_manager.validateProcessingConfig())
             {
                 res.status = 400;
                 res.set_content(json{{"error", "Invalid configuration"}}.dump(), "application/json");
                 return;
             }
             // Update configuration (this will trigger reactive events)
-            config_manager.updateProcessingConfig(yaml_body);
+            config_manager.updateProcessingConfig(body.dump());
             res.set_content(json{{"message", "Processing configuration updated successfully"}}.dump(), "application/json");
             Logger::info("Processing configuration updated successfully");
         }

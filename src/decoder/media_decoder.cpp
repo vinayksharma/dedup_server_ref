@@ -1,12 +1,12 @@
 #include "core/decoder/media_decoder.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "core/cache/decoder_cache.hpp"
 #include "logging/logger.hpp"
 
 MediaDecoder::MediaDecoder()
 {
-    // Get configuration from ServerConfigManager
-    auto &config_manager = ServerConfigManager::getInstance();
+    // Get configuration from PocoConfigAdapter
+    auto &config_manager = PocoConfigAdapter::getInstance();
     max_decoder_threads_ = config_manager.getMaxDecoderThreads();
 
     // Get cache size from DecoderCache

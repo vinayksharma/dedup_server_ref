@@ -1,5 +1,5 @@
 #include "core/simple_scheduler.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <chrono>
 
@@ -74,7 +74,7 @@ void SimpleScheduler::schedulerLoop()
     while (running_.load())
     {
         auto now = std::chrono::system_clock::now();
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
 
         // Check scan interval
         int scan_interval = config_manager.getScanIntervalSeconds();

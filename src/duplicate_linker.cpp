@@ -1,6 +1,6 @@
 #include "core/duplicate_linker.hpp"
 #include "database/database_manager.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
@@ -76,7 +76,7 @@ void DuplicateLinker::workerLoop()
 
         try
         {
-            auto &config = ServerConfigManager::getInstance();
+            auto &config = PocoConfigAdapter::getInstance();
             DedupMode mode = config.getDedupMode();
             std::string mode_name = DedupModes::getModeName(mode);
 

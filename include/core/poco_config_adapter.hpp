@@ -2,6 +2,7 @@
 
 #include "core/poco_config_manager.hpp"
 #include "core/dedup_modes.hpp"
+#include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -34,6 +35,7 @@ public:
     ~PocoConfigAdapter();
 
     // Configuration getters - delegate to PocoConfigManager
+    nlohmann::json getAll() const;
     DedupMode getDedupMode() const;
     std::string getLogLevel() const;
     int getServerPort() const;
@@ -67,6 +69,11 @@ public:
     // Cache configuration getters
     uint32_t getDecoderCacheSizeMB() const;
 
+    // Cache configuration methods
+    std::string getCacheConfig() const;
+    bool validateCacheConfig() const;
+    void updateCacheConfig(const std::string &json_config);
+
     // Decoder configuration getters
     int getMaxDecoderThreads() const;
 
@@ -92,6 +99,18 @@ public:
     void setAuthSecret(const std::string &secret);
     void updateConfig(const std::string &json_config);
 
+    // Processing configuration methods
+    std::string getProcessingConfig() const;
+    void updateProcessingConfig(const std::string &json_config);
+    bool validateProcessingConfig() const;
+
+    // Configuration file operations
+    bool saveConfig(const std::string &file_path) const;
+    bool loadConfig(const std::string &file_path);
+
+    // Configuration validation
+    bool validateConfig() const;
+
     // Runtime config file watching
     void startWatching(const std::string &file_path = "config.json", int interval_seconds = 2);
     void stopWatching();
@@ -103,23 +122,6 @@ public:
     // Observer management aliases for consistency
     void addObserver(ConfigObserver *observer) { subscribe(observer); }
     void removeObserver(ConfigObserver *observer) { unsubscribe(observer); }
-
-    // Configuration persistence
-    bool loadConfig(const std::string &file_path);
-    bool saveConfig(const std::string &file_path) const;
-
-    // Configuration validation
-    bool validateConfig() const;
-
-    // Processing configuration specific methods
-    std::string getProcessingConfig() const;
-    bool validateProcessingConfig() const;
-    void updateProcessingConfig(const std::string &json_config);
-
-    // Cache configuration specific methods
-    std::string getCacheConfig() const;
-    bool validateCacheConfig() const;
-    void updateCacheConfig(const std::string &json_config);
 
 private:
     PocoConfigAdapter();

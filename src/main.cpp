@@ -9,6 +9,7 @@
 #include "database/database_manager.hpp"
 #include "core/server_config_manager.hpp"
 #include "core/server_config.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "core/simple_scheduler.hpp"
 #include "web/openapi_docs.hpp"
 #include "core/status.hpp"
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
     Logger::info("Starting dedup server (PID: " + std::to_string(getpid()) + ")...");
 
     // Initialize configuration manager
-    auto &config_manager = ServerConfigManager::getInstance();
+    auto &config_manager = PocoConfigAdapter::getInstance();
 
     // Initialize logger with configured log level
     Logger::init(config_manager.getLogLevel());
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
             Logger::info("Found " + std::to_string(scan_paths.size()) + " scan paths for immediate scan");
 
             // Get configured scan thread limit
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             int max_scan_threads = config_manager.getMaxScanThreads();
 
             Logger::info("Starting immediate parallel scan with " + std::to_string(max_scan_threads) + " threads for " +
@@ -318,7 +319,7 @@ int main(int argc, char *argv[])
                 Logger::info("Found " + std::to_string(scan_paths.size()) + " scan paths to process");
                 
                 // Get configured scan thread limit
-                auto &config_manager = ServerConfigManager::getInstance();
+                auto &config_manager = PocoConfigAdapter::getInstance();
                 int max_scan_threads = config_manager.getMaxScanThreads();
                 
                 Logger::info("Starting parallel scan with " + std::to_string(max_scan_threads) + " threads for " + 
@@ -338,7 +339,7 @@ int main(int argc, char *argv[])
                     [&](const tbb::blocked_range<size_t>& range) {
                         // Round-robin distribution: each thread processes every Nth path
                         // where N is the number of threads
-                        auto& config_manager = ServerConfigManager::getInstance();
+                        auto& config_manager = PocoConfigAdapter::getInstance();
                         int max_scan_threads = config_manager.getMaxScanThreads();
                         
                         // Get thread ID for round-robin distribution
@@ -396,7 +397,7 @@ int main(int argc, char *argv[])
             Logger::info("Executing scheduled processing operation");
             try {
                 // Process files that need processing using ThreadPoolManager
-                auto &config_manager = ServerConfigManager::getInstance();
+                auto &config_manager = PocoConfigAdapter::getInstance();
                 ThreadPoolManager::processAllScannedFilesAsync(
                     config_manager.getMaxProcessingThreads(),
                     // on_event callback

@@ -21,7 +21,7 @@
 #include "core/transcoding_manager.hpp"
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
-#include "core/poco_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 
 using json = nlohmann::json;
 
@@ -345,8 +345,8 @@ private:
         Logger::trace("Received get config request");
         try
         {
-            auto &poco_cfg = PocoConfigManager::getInstance();
-            auto j = poco_cfg.getAll();
+            auto &config = PocoConfigAdapter::getInstance();
+            auto j = config.getAll();
             nlohmann::json response = {{"status", "success"}, {"config", j}};
             res.set_content(response.dump(), "application/json");
             Logger::info("Configuration retrieved successfully");
@@ -365,17 +365,8 @@ private:
         try
         {
             auto body = nlohmann::json::parse(req.body);
-            auto &poco_cfg = PocoConfigManager::getInstance();
-            poco_cfg.update(body);
-            poco_cfg.save("config.json");
-            // Keep legacy manager in sync for now
-            try
-            {
-                ServerConfigManager::getInstance().updateConfig(YAML::Load(body.dump()));
-            }
-            catch (...)
-            {
-            }
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateConfig(body.dump());
             res.set_content(json{{"message", "Configuration updated successfully"}}.dump(), "application/json");
             Logger::info("Configuration updated successfully");
         }
@@ -395,21 +386,13 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &poco_cfg = PocoConfigManager::getInstance();
+            auto &config = PocoConfigAdapter::getInstance();
             if (file_path.empty())
                 file_path = "config.json";
-            if (poco_cfg.load(file_path))
+            if (config.loadConfig(file_path))
             {
-                // Sync legacy manager
-                try
-                {
-                    ServerConfigManager::getInstance().updateConfig(YAML::Load(poco_cfg.getAll().dump()));
-                }
-                catch (...)
-                {
-                }
                 res.set_content(json{{"message", "Configuration reloaded successfully"}}.dump(), "application/json");
-                Logger::info("Poco configuration reloaded from: " + file_path);
+                Logger::info("Configuration reloaded from: " + file_path);
             }
             else
             {
@@ -433,13 +416,13 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &poco_cfg = PocoConfigManager::getInstance();
+            auto &config = PocoConfigAdapter::getInstance();
             if (file_path.empty())
                 file_path = "config.json";
-            if (poco_cfg.save(file_path))
+            if (config.saveConfig(file_path))
             {
                 res.set_content(json{{"message", "Configuration saved successfully"}}.dump(), "application/json");
-                Logger::info("Poco configuration saved to: " + file_path);
+                Logger::info("Configuration saved to: " + file_path);
             }
             else
             {
@@ -1085,18 +1068,14 @@ private:
         Logger::trace("Received get processing config request");
         try
         {
-            auto &config_manager = ServerConfigManager::getInstance();
-            YAML::Node config = config_manager.getProcessingConfig();
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string config_json = config.getProcessingConfig();
 
-            // For now, just return the YAML as a string to avoid conversion issues
-            std::stringstream ss;
-            ss << config;
-            std::string yaml_str = ss.str();
-
-            // Create a simple JSON response with the YAML content
+            // Parse the JSON string to create a proper JSON response
+            auto config_obj = nlohmann::json::parse(config_json);
             nlohmann::json response = {
                 {"status", "success"},
-                {"config", yaml_str}};
+                {"config", config_obj}};
 
             res.set_content(response.dump(), "application/json");
             Logger::info("Processing configuration retrieved successfully");

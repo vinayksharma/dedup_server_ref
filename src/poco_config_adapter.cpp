@@ -1,5 +1,6 @@
 #include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -47,6 +48,12 @@ PocoConfigAdapter::PocoConfigAdapter()
     {
         Logger::info("No existing config.json found, using defaults");
     }
+}
+
+// Configuration getters - delegate to PocoConfigManager
+nlohmann::json PocoConfigAdapter::getAll() const
+{
+    return poco_cfg_.getAll();
 }
 
 PocoConfigAdapter::~PocoConfigAdapter()

@@ -1,5 +1,5 @@
 #include "database/database_manager.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "core/duplicate_linker.hpp"
 #include "core/dedup_modes.hpp"
 #include "core/media_processor.hpp"
@@ -144,7 +144,7 @@ DatabaseManager::DatabaseManager(const std::string &db_path)
         Logger::info("Database opened successfully: " + db_path);
         
         // Set busy timeout to prevent indefinite waiting on locks
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         int busy_timeout_ms = config_manager.getDatabaseBusyTimeoutMs();
         sqlite3_busy_timeout(dbMan.db_, busy_timeout_ms);
         Logger::info("Database busy timeout set to " + std::to_string(busy_timeout_ms) + "ms");
@@ -1812,12 +1812,12 @@ DBOpResult DatabaseManager::executeWithRetry(std::function<DBOpResult()> operati
     // Use configurable values if not specified
     if (max_retries == -1)
     {
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         max_retries = config_manager.getDatabaseMaxRetries();
     }
 
     // Get configurable backoff settings
-    auto &config_manager = ServerConfigManager::getInstance();
+    auto &config_manager = PocoConfigAdapter::getInstance();
     int base_backoff = config_manager.getDatabaseBackoffBaseMs();
     int max_backoff = config_manager.getDatabaseMaxBackoffMs();
 
@@ -2197,7 +2197,7 @@ DBOpResult DatabaseManager::addFileLink(const std::string &file_path, int linked
     // Get the current deduplication mode from the server configuration
     try
     {
-        auto &config = ServerConfigManager::getInstance();
+        auto &config = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config.getDedupMode();
         return setFileLinksForMode(file_path, current_links, current_mode);
     }
@@ -2226,7 +2226,7 @@ DBOpResult DatabaseManager::removeFileLink(const std::string &file_path, int lin
     // Get the current deduplication mode from the server configuration
     try
     {
-        auto &config = ServerConfigManager::getInstance();
+        auto &config = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config.getDedupMode();
         return setFileLinksForMode(file_path, current_links, current_mode);
     }
@@ -2489,7 +2489,7 @@ bool DatabaseManager::fileNeedsProcessingForMode(const std::string &file_path, D
         if (needs_processing) {
             // Check if file has a supported extension using configuration
             std::string file_extension = MediaProcessor::getFileExtension(captured_file_path);
-            auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+            auto enabled_types = PocoConfigAdapter::getInstance().getEnabledFileTypes();
             bool has_supported_extension = std::find(enabled_types.begin(), enabled_types.end(), file_extension) != enabled_types.end();
             
             needs_processing = has_supported_extension;
@@ -2953,7 +2953,7 @@ std::vector<std::string> DatabaseManager::getFilesNeedingTranscoding()
         // Only select files that actually need transcoding (RAW formats)
         // Dynamically build query based on enabled RAW formats from configuration
         // This makes the system truly configuration-driven
-        auto transcoding_types = ServerConfigManager::getInstance().getTranscodingFileTypes();
+        auto transcoding_types = PocoConfigAdapter::getInstance().getTranscodingFileTypes();
         
         if (transcoding_types.empty())
         {
@@ -4411,7 +4411,7 @@ std::vector<std::pair<std::string, std::string>> DatabaseManager::getAndMarkFile
 // Helper function to generate SQL LIKE clauses for enabled file types
 std::string DatabaseManager::generateFileTypeLikeClauses()
 {
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+    auto enabled_types = PocoConfigAdapter::getInstance().getEnabledFileTypes();
     if (enabled_types.empty())
     {
         return "1=0"; // No enabled types, return false condition
@@ -4817,7 +4817,7 @@ std::vector<int> DatabaseManager::getFileLinksForCurrentMode(const std::string &
     // Get the current deduplication mode from the server configuration
     try
     {
-        auto &config = ServerConfigManager::getInstance();
+        auto &config = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config.getDedupMode();
         return getFileLinksForMode(file_path, current_mode);
     }

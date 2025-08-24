@@ -4,6 +4,7 @@
 #include "database/database_manager.hpp"
 #include "core/duplicate_linker.hpp"
 #include "logging/logger.hpp"
+#include "core/poco_config_adapter.hpp"
 #include <chrono>
 #include <thread>
 #include <condition_variable>
@@ -17,7 +18,7 @@ MediaProcessingOrchestrator::MediaProcessingOrchestrator(DatabaseManager &dbMan)
     : dbMan_(dbMan), cancelled_(false)
 {
     // Subscribe to configuration changes
-    ServerConfigManager::getInstance().subscribe(this);
+    PocoConfigAdapter::getInstance().subscribe(this);
 }
 
 MediaProcessingOrchestrator::~MediaProcessingOrchestrator()
@@ -29,7 +30,7 @@ MediaProcessingOrchestrator::~MediaProcessingOrchestrator()
     stopTimerBasedProcessing();
 
     // Unsubscribe from configuration changes
-    ServerConfigManager::getInstance().unsubscribe(this);
+    PocoConfigAdapter::getInstance().unsubscribe(this);
 
     Logger::debug("MediaProcessingOrchestrator destructor called");
 }
@@ -78,7 +79,7 @@ SimpleObservable<FileProcessingEvent> MediaProcessingOrchestrator::processAllSca
     int actual_max_threads = max_threads;
     if (actual_max_threads == -1)
     {
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         actual_max_threads = config_manager.getMaxProcessingThreads();
     }
 
@@ -91,7 +92,7 @@ SimpleObservable<FileProcessingEvent> MediaProcessingOrchestrator::processAllSca
                 if (onError) onError(std::runtime_error("Database not initialized"));
                 return;
             }
-            auto& config_manager = ServerConfigManager::getInstance();
+            auto& config_manager = PocoConfigAdapter::getInstance();
             DedupMode mode = config_manager.getDedupMode();
             bool pre_process_quality_stack = config_manager.getPreProcessQualityStack();
             
@@ -320,7 +321,7 @@ void MediaProcessingOrchestrator::startTimerBasedProcessing(int processing_inter
     // Use configuration if max_threads is -1 (default)
     if (max_threads == -1)
     {
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         max_threads = config_manager.getMaxProcessingThreads();
     }
 

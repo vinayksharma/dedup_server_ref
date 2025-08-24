@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <chrono>
 #include <iostream> // Required for std::cerr
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include <libraw/libraw.h>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -159,7 +159,7 @@ void TranscodingManager::loadConfiguration()
 {
     try
     {
-        ServerConfigManager &config = ServerConfigManager::getInstance();
+        PocoConfigAdapter &config = PocoConfigAdapter::getInstance();
 
         // Load raw file extensions that need transcoding
         auto transcoding_types = config.getTranscodingFileTypes();
@@ -496,7 +496,7 @@ bool TranscodingManager::isRawFile(const std::string &file_path)
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
     // Use ServerConfigManager to check if this extension needs transcoding
-    bool needs_transcoding = ServerConfigManager::getInstance().needsTranscoding(extension);
+    bool needs_transcoding = PocoConfigAdapter::getInstance().needsTranscoding(extension);
 
     return needs_transcoding;
 }
@@ -1484,7 +1484,7 @@ size_t TranscodingManager::retryTranscodingErrorFiles()
     try
     {
         // Get files that are in transcoding error state (3) for any mode
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         bool pre_process_quality_stack = config_manager.getPreProcessQualityStack();
 
         std::vector<std::string> files_to_retry;
@@ -1525,7 +1525,7 @@ size_t TranscodingManager::retryTranscodingErrorFiles()
                 Logger::info("Retrying transcoding for file in error state: " + file_path);
 
                 // Reset the flag to -1 (in progress) to allow retry
-                auto &config_manager = ServerConfigManager::getInstance();
+                auto &config_manager = PocoConfigAdapter::getInstance();
                 bool pre_process_quality_stack = config_manager.getPreProcessQualityStack();
 
                 std::vector<DedupMode> modes_to_reset;

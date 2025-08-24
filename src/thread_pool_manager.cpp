@@ -4,7 +4,7 @@
 #include "core/file_utils.hpp"
 #include "core/transcoding_manager.hpp"
 #include "core/duplicate_linker.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
 #include <chrono>
@@ -42,7 +42,7 @@ void ThreadPoolManager::initialize(size_t num_threads)
                 }
 
                 // Register as config observer for dynamic updates
-                ServerConfigManager::getInstance().addObserver(instance_ptr.get());
+                PocoConfigAdapter::getInstance().addObserver(instance_ptr.get());
 
                 Logger::info("Thread pool manager initialized with " + std::to_string(num_threads) + " threads");
             }
@@ -61,7 +61,7 @@ void ThreadPoolManager::initialize(size_t num_threads)
                 }
 
                 // Register as config observer for dynamic updates
-                ServerConfigManager::getInstance().addObserver(instance_ptr.get());
+                PocoConfigAdapter::getInstance().addObserver(instance_ptr.get());
 
                 Logger::info("Thread pool manager initialized with default 4 threads");
             }
@@ -81,7 +81,7 @@ void ThreadPoolManager::shutdown()
             {
                 if (instance_ptr)
                 {
-                    ServerConfigManager::getInstance().removeObserver(instance_ptr.get());
+                    PocoConfigAdapter::getInstance().removeObserver(instance_ptr.get());
                     // FIXED: Smart pointer automatically cleans up - no manual delete needed
                     instance_ptr.reset();
                 }
@@ -152,7 +152,7 @@ size_t ThreadPoolManager::getMaxAllowedThreadCount()
 {
     try
     {
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         return static_cast<size_t>(config_manager.getMaxProcessingThreads());
     }
     catch (...)
@@ -169,7 +169,7 @@ void ThreadPoolManager::onConfigChanged(const ConfigEvent &event)
     {
         try
         {
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             size_t new_thread_count = static_cast<size_t>(config_manager.getMaxProcessingThreads());
 
             Logger::info("Configuration change detected - max_processing_threads: " + std::to_string(new_thread_count));
@@ -297,7 +297,7 @@ void ThreadPoolManager::processAllScannedFilesAsync(
     {
         // Get database manager instance
         DatabaseManager &dbMan = DatabaseManager::getInstance();
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
 
         // Use dynamic thread count from configuration if available, otherwise use passed parameter
         size_t actual_thread_count = getMaxAllowedThreadCount();
@@ -529,7 +529,7 @@ void ThreadPoolManager::processFileWithOwnConnection(const std::string &db_path,
         Logger::info("Processing file with shared database connection: " + file_path);
 
         // Process the file using the orchestrator
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         auto processing_observable = orchestrator.processAllScannedFiles(config_manager.getMaxProcessingThreads());
 
         processing_observable.subscribe(

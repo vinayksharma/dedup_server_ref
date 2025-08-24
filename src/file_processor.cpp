@@ -1,7 +1,7 @@
 #include "core/file_processor.hpp"
 #include "database/database_manager.hpp"
 #include "core/media_processor.hpp"
-#include "core/server_config_manager.hpp"
+#include "core/poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <iostream>
 
@@ -12,7 +12,7 @@ FileProcessor::FileProcessor(const std::string &db_path)
     Logger::info("FileProcessor initialized with database: " + db_path);
 
     // Subscribe to configuration changes
-    ServerConfigManager::getInstance().subscribe(this);
+    PocoConfigAdapter::getInstance().subscribe(this);
 }
 
 FileProcessor::~FileProcessor()
@@ -23,7 +23,7 @@ FileProcessor::~FileProcessor()
     }
 
     // Unsubscribe from configuration changes
-    ServerConfigManager::getInstance().unsubscribe(this);
+    PocoConfigAdapter::getInstance().unsubscribe(this);
 }
 
 size_t FileProcessor::processDirectory(const std::string &dir_path, bool recursive)
@@ -36,7 +36,7 @@ size_t FileProcessor::processDirectory(const std::string &dir_path, bool recursi
     try
     {
         // Get current quality mode from configuration
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config_manager.getDedupMode();
 
         Logger::info("Using quality mode: " + DedupModes::getModeName(current_mode));
@@ -90,7 +90,7 @@ FileProcessResult FileProcessor::processFile(const std::string &file_path)
             return FileProcessResult(false, msg);
         }
 
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config_manager.getDedupMode();
         ProcessingResult result = MediaProcessor::processFile(file_path, current_mode);
         DBOpResult db_result = db_manager_->storeProcessingResult(file_path, current_mode, result);
@@ -151,7 +151,7 @@ FileProcessResult FileProcessor::processFile(const std::string &file_path)
         // Set processing flag to 2 (error state) when exception occurs
         try
         {
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             DedupMode current_mode = config_manager.getDedupMode();
             auto flag_result = db_manager_->setProcessingFlagError(file_path, current_mode);
             if (!flag_result.success)
@@ -219,7 +219,7 @@ void FileProcessor::handleFile(const std::string &file_path)
             return;
         }
 
-        auto &config_manager = ServerConfigManager::getInstance();
+        auto &config_manager = PocoConfigAdapter::getInstance();
         DedupMode current_mode = config_manager.getDedupMode();
         ProcessingResult result = MediaProcessor::processFile(file_path, current_mode);
         DBOpResult db_result = db_manager_->storeProcessingResult(file_path, current_mode, result);
@@ -277,7 +277,7 @@ void FileProcessor::handleFile(const std::string &file_path)
         // Set processing flag to 2 (error state) when exception occurs
         try
         {
-            auto &config_manager = ServerConfigManager::getInstance();
+            auto &config_manager = PocoConfigAdapter::getInstance();
             DedupMode current_mode = config_manager.getDedupMode();
             auto flag_result = db_manager_->setProcessingFlagError(file_path, current_mode);
             if (!flag_result.success)

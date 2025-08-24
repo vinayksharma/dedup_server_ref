@@ -1647,21 +1647,21 @@ ProcessingResult MediaProcessor::processAudioQuality(const std::string &file_pat
 bool MediaProcessor::isImageFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+    auto enabled_types = ServerConfigManager::getInstance().getEnabledImageExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 
 bool MediaProcessor::isVideoFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+    auto enabled_types = ServerConfigManager::getInstance().getEnabledVideoExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 
 bool MediaProcessor::isAudioFile(const std::string &file_path)
 {
     std::string ext = getFileExtension(file_path);
-    auto enabled_types = ServerConfigManager::getInstance().getEnabledFileTypes();
+    auto enabled_types = ServerConfigManager::getInstance().getEnabledAudioExtensions();
     return std::find(enabled_types.begin(), enabled_types.end(), ext) != enabled_types.end();
 }
 

@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 #include "core/media_processor.hpp"
 #include "core/dedup_modes.hpp"
+#include "test_base.hpp"
 
-class MediaProcessorTest : public ::testing::Test
+class MediaProcessorTest : public TestBase
 {
 protected:
     void SetUp() override

@@ -14,6 +14,8 @@ add_executable(dedup_tests
     media_processor_test.cpp
     file_processor_test.cpp
     database_manager_test.cpp
+    poco_config_manager_test.cpp
+    poco_config_adapter_test.cpp
     ../src/auth.cpp
     ../src/file_utils.cpp
     ../src/media_processor.cpp
@@ -26,6 +28,8 @@ add_executable(dedup_tests
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
+    ../src/poco_config_manager.cpp
+    ../src/poco_config_adapter.cpp
 )
 
 target_include_directories(dedup_tests PRIVATE
@@ -45,6 +49,9 @@ target_link_libraries(dedup_tests PRIVATE
     PkgConfig::LIBRAW
     yaml-cpp
     TBB::tbb
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
 )
 
 include(GoogleTest)

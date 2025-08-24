@@ -88,6 +88,7 @@ set(SOURCES
     src/file_utils.cpp
     src/server_config_manager.cpp
     src/poco_config_manager.cpp
+    src/poco_config_adapter.cpp
     src/media_processor.cpp
     src/database/database_manager.cpp
     src/file_processor.cpp

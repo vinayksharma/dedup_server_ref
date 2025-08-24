@@ -8,7 +8,7 @@ ServerConfigManager::ServerConfigManager()
     Logger::info("ServerConfigManager constructor called");
 
     // Try to load configuration from file first
-    const std::string config_file = "config.json";
+    const std::string config_file = "config.yaml";
 
     // Check if config file exists
     std::ifstream file_check(config_file);
@@ -45,7 +45,7 @@ ServerConfigManager::ServerConfigManager()
     // Initialize last write time for watcher
     try
     {
-        last_write_time_ = std::filesystem::last_write_time("config.json");
+        last_write_time_ = std::filesystem::last_write_time("config.yaml");
     }
     catch (...)
     {

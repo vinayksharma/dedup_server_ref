@@ -5,12 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add Homebrew spdlog path for macOS
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/opt/homebrew/opt/spdlog:/opt/homebrew/opt/yaml-cpp")
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}:/opt/homebrew/opt/spdlog:/opt/homebrew/opt/yaml-cpp:/opt/homebrew/opt/poco:/opt/homebrew/lib/cmake")
 
 # Find required packages
 find_package(OpenSSL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Poco REQUIRED COMPONENTS Util JSON Foundation)
 
 # Find TBB (Intel Threading Building Blocks)
 find_package(TBB REQUIRED)
@@ -77,7 +78,7 @@ include_directories(
     /opt/homebrew/include
 )
 
-# Add Homebrew yaml-cpp lib directory for linker
+# Add Homebrew yaml-cpp lib directory for linker (legacy linkage style)
 link_directories(/opt/homebrew/opt/yaml-cpp/lib)
 
 # Add source files
@@ -86,6 +87,7 @@ set(SOURCES
     src/auth.cpp
     src/file_utils.cpp
     src/server_config_manager.cpp
+    src/poco_config_manager.cpp
     src/media_processor.cpp
     src/database/database_manager.cpp
     src/file_processor.cpp
@@ -112,6 +114,7 @@ set(HEADERS
     include/core/singleton_manager.hpp
     include/core/dedup_modes.hpp
     include/core/server_config_manager.hpp
+    include/core/poco_config_manager.hpp
     include/core/media_processor.hpp
     include/core/simple_scheduler.hpp
     include/core/file_scanner.hpp
@@ -151,6 +154,9 @@ target_link_libraries(dedup_server
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
     $<$<BOOL:${ONNXRUNTIME_FOUND}>:PkgConfig::ONNXRUNTIME>
     PkgConfig::LIBRAW
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
     yaml-cpp
     # macOS native frameworks for faster file enumeration (using C APIs, no frameworks needed)
 )

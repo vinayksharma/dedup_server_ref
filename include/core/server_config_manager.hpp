@@ -116,7 +116,7 @@ public:
     void updateConfig(const YAML::Node &new_config);
 
     // Runtime config file watching
-    void startWatching(const std::string &file_path = "config.yaml", int interval_seconds = 2);
+    void startWatching(const std::string &file_path = "config.json", int interval_seconds = 2);
     void stopWatching();
 
     // Observer management

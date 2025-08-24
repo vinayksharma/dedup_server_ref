@@ -67,3 +67,6 @@ cache/
 # Pictures directory (test files)
 pictures/
 
+# Python virtualenv
+.venv/
+

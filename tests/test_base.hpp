@@ -44,7 +44,7 @@ protected:
         DatabaseManager::getInstance(test_db_path_);
 
         // Initialize ServerConfigManager for tests
-        ServerConfigManager::getInstance().loadConfig("config.yaml"); // Load default config for tests
+        ServerConfigManager::getInstance().loadConfig("config.json"); // Load default config for tests
 
         Logger::info("TestBase SetUp completed for test: " + std::string(::testing::UnitTest::GetInstance()->current_test_info()->name()));
     }

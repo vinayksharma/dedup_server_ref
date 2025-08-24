@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     Logger::init(config_manager.getLogLevel());
 
     // Start watching configuration for runtime changes
-    config_manager.startWatching("config.yaml", 2);
+    config_manager.startWatching("config.json", 2);
 
     // Initialize safety mechanisms for external library calls
     Logger::info("Initializing safety mechanisms...");

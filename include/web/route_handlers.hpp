@@ -21,73 +21,11 @@
 #include "core/transcoding_manager.hpp"
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
-#include <yaml-cpp/yaml.h> // Added for YAML::Node
+#include "core/poco_config_manager.hpp"
 
 using json = nlohmann::json;
 
-// Helper function to convert YAML::Node to nlohmann::json
-void convertYamlToJson(const YAML::Node &yaml, nlohmann::json &json)
-{
-    if (!yaml.IsDefined())
-    {
-        json = nullptr;
-        return;
-    }
-
-    if (yaml.IsNull())
-    {
-        json = nullptr;
-    }
-    else if (yaml.IsScalar())
-    {
-        // Handle different scalar types
-        if (yaml.Tag() == "!")
-        {
-            // Boolean
-            json = yaml.as<bool>();
-        }
-        else
-        {
-            // Try to parse as number first, then string
-            try
-            {
-                std::string str_val = yaml.as<std::string>();
-                if (str_val.find('.') != std::string::npos)
-                {
-                    json = yaml.as<double>();
-                }
-                else
-                {
-                    json = yaml.as<int64_t>();
-                }
-            }
-            catch (...)
-            {
-                json = yaml.as<std::string>();
-            }
-        }
-    }
-    else if (yaml.IsSequence())
-    {
-        json = nlohmann::json::array();
-        for (const auto &item : yaml)
-        {
-            nlohmann::json child;
-            convertYamlToJson(item, child);
-            json.push_back(child);
-        }
-    }
-    else if (yaml.IsMap())
-    {
-        json = nlohmann::json::object();
-        for (const auto &it : yaml)
-        {
-            nlohmann::json child;
-            convertYamlToJson(it.second, child);
-            json[it.first.as<std::string>()] = child;
-        }
-    }
-}
+// Removed YAML->JSON helper; endpoints use PocoConfigManager JSON directly
 
 // Global orchestrator instance for coordination between scan and processing
 static std::unique_ptr<MediaProcessingOrchestrator> global_orchestrator;
@@ -407,19 +345,9 @@ private:
         Logger::trace("Received get config request");
         try
         {
-            auto &config_manager = ServerConfigManager::getInstance();
-            YAML::Node config = config_manager.getConfig();
-
-            // For now, just return the YAML as a string to avoid conversion issues
-            std::stringstream ss;
-            ss << config;
-            std::string yaml_str = ss.str();
-
-            // Create a simple JSON response with the YAML content
-            nlohmann::json response = {
-                {"status", "success"},
-                {"config", yaml_str}};
-
+            auto &poco_cfg = PocoConfigManager::getInstance();
+            auto j = poco_cfg.getAll();
+            nlohmann::json response = {{"status", "success"}, {"config", j}};
             res.set_content(response.dump(), "application/json");
             Logger::info("Configuration retrieved successfully");
         }
@@ -437,18 +365,17 @@ private:
         try
         {
             auto body = nlohmann::json::parse(req.body);
-            // Convert JSON to YAML::Node
-            YAML::Node yaml_body = YAML::Load(body.dump());
-            auto &config_manager = ServerConfigManager::getInstance();
-            // Validate the configuration
-            if (!config_manager.validateConfig(yaml_body))
+            auto &poco_cfg = PocoConfigManager::getInstance();
+            poco_cfg.update(body);
+            poco_cfg.save("config.json");
+            // Keep legacy manager in sync for now
+            try
             {
-                res.status = 400;
-                res.set_content(json{{"error", "Invalid configuration"}}.dump(), "application/json");
-                return;
+                ServerConfigManager::getInstance().updateConfig(YAML::Load(body.dump()));
             }
-            // Update configuration (this will trigger reactive events)
-            config_manager.updateConfig(yaml_body);
+            catch (...)
+            {
+            }
             res.set_content(json{{"message", "Configuration updated successfully"}}.dump(), "application/json");
             Logger::info("Configuration updated successfully");
         }
@@ -468,12 +395,21 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &config_manager = ServerConfigManager::getInstance();
-
-            if (config_manager.loadConfig(file_path))
+            auto &poco_cfg = PocoConfigManager::getInstance();
+            if (file_path.empty())
+                file_path = "config.json";
+            if (poco_cfg.load(file_path))
             {
+                // Sync legacy manager
+                try
+                {
+                    ServerConfigManager::getInstance().updateConfig(YAML::Load(poco_cfg.getAll().dump()));
+                }
+                catch (...)
+                {
+                }
                 res.set_content(json{{"message", "Configuration reloaded successfully"}}.dump(), "application/json");
-                Logger::info("Configuration reloaded from: " + file_path);
+                Logger::info("Poco configuration reloaded from: " + file_path);
             }
             else
             {
@@ -497,12 +433,13 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &config_manager = ServerConfigManager::getInstance();
-
-            if (config_manager.saveConfig(file_path))
+            auto &poco_cfg = PocoConfigManager::getInstance();
+            if (file_path.empty())
+                file_path = "config.json";
+            if (poco_cfg.save(file_path))
             {
                 res.set_content(json{{"message", "Configuration saved successfully"}}.dump(), "application/json");
-                Logger::info("Configuration saved to: " + file_path);
+                Logger::info("Poco configuration saved to: " + file_path);
             }
             else
             {

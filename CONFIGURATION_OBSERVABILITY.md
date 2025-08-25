@@ -80,7 +80,7 @@ This document describes the implementation of real-time configuration observabil
 
 #### Basic Test Script
 
-- **File**: `test_config_observability.sh`
+- **File**: `tests/test_config_observability.sh`
 - **Purpose**: Demonstrates basic real-time configuration observability
 - **Features**:
   - Retrieves current configuration
@@ -91,7 +91,7 @@ This document describes the implementation of real-time configuration observabil
 
 #### Enhanced Real-Time Test Script
 
-- **File**: `test_config_real_time.sh`
+- **File**: `tests/test_config_real_time.sh`
 - **Purpose**: Demonstrates immediate configuration change effects
 - **Features**:
   - Tests multiple configuration values (60s, 30s, 120s)
@@ -107,10 +107,10 @@ This document describes the implementation of real-time configuration observabil
 ./run.sh
 
 # In another terminal, run the basic test
-./test_config_observability.sh
+./tests/test_config_observability.sh
 
 # Or run the enhanced real-time test
-./test_config_real_time.sh
+./tests/test_config_real_time.sh
 
 # Monitor server logs for configuration change notifications
 tail -f dedup_server.log | grep -E "(SimpleScheduler|Configuration|processing_interval|CONFIG CHANGE)"

@@ -146,7 +146,7 @@ echo "✓ Scheduler loop now runs every 1 second (instead of 10 seconds)"
 echo "✓ Manual trigger methods added for testing"
 echo
 echo -e "${BLUE}To monitor real-time changes, run:${NC}"
-echo -e "${YELLOW}  ./test_config_real_time.sh${NC}"
+echo -e "${YELLOW}  ./tests/test_config_real_time.sh${NC}"
 echo
 echo -e "${BLUE}To see immediate effect, check server logs for:${NC}"
 echo -e "${YELLOW}  - 'CONFIG CHANGE DETECTED'${NC}"

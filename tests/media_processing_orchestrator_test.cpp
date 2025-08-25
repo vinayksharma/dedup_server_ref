@@ -90,6 +90,7 @@ TEST_F(MediaProcessingOrchestratorTest, EmitsEventsAndUpdatesDB)
 
     // Test the atomic processing methods directly
     auto files_to_process = dbMan.getAndMarkFilesForProcessing(DedupMode::BALANCED, 10);
+
     EXPECT_EQ(files_to_process.size(), 2); // Only the image files should be marked for processing
 
     // Check that files are marked as in progress (-1)

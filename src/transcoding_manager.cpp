@@ -94,7 +94,7 @@ public:
 };
 
 // Raw file extensions that need transcoding - now configuration-driven
-// These are no longer used as we use ServerConfigManager::needsTranscoding()
+// These are no longer used as we use PocoConfigAdapter::needsTranscoding()
 
 TranscodingManager &TranscodingManager::getInstance()
 {
@@ -495,7 +495,7 @@ bool TranscodingManager::isRawFile(const std::string &file_path)
     std::string extension = MediaProcessor::getFileExtension(file_path);
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-    // Use ServerConfigManager to check if this extension needs transcoding
+    // Use PocoConfigAdapter to check if this extension needs transcoding
     bool needs_transcoding = PocoConfigAdapter::getInstance().needsTranscoding(extension);
 
     return needs_transcoding;

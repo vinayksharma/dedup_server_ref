@@ -24,7 +24,7 @@ int main()
         // Initialize DatabaseManager with test database
         auto &db_manager = DatabaseManager::getInstance(test_db_path);
 
-        // Note: ServerConfigManager initialization would require more dependencies
+        // Note: PocoConfigAdapter initialization would require more dependencies
         // For now, just set up the database
 
         Logger::info("Test environment setup complete.");

@@ -15,7 +15,7 @@ class ConfigObserver;
 struct ConfigEvent;
 
 /**
- * @brief Configuration adapter that provides ServerConfigManager interface
+ * @brief Configuration adapter that provides the legacy ServerConfigManager interface
  * but delegates to PocoConfigManager internally.
  *
  * This provides backward compatibility while using the new Poco-based
@@ -24,7 +24,7 @@ struct ConfigEvent;
 class PocoConfigAdapter
 {
 public:
-    // Singleton pattern - replaces ServerConfigManager::getInstance()
+    // Singleton pattern - replaces the legacy ServerConfigManager::getInstance()
     static PocoConfigAdapter &getInstance()
     {
         static PocoConfigAdapter instance;

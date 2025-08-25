@@ -134,4 +134,4 @@ int main(int argc, char *argv[])
 // - Display processing statistics and sample results
 //
 // Supported file types: jpg, png, mp4, avi, mov, etc.
-// Quality modes: FAST, BALANCED, QUALITY (configurable via ServerConfigManager)
+// Quality modes: FAST, BALANCED, QUALITY (configurable via PocoConfigAdapter)

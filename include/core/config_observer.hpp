@@ -29,5 +29,3 @@ public:
     virtual ~ConfigObserver() = default;
     virtual void onConfigChanged(const ConfigEvent &event) = 0;
 };
-
-

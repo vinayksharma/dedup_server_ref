@@ -12,9 +12,9 @@ This document describes the implementation of real-time configuration observabil
 - **Addition**: `processing_interval_seconds: 1800` (30 minutes)
 - **Location**: Added after `scan_interval_seconds: 300`
 
-### 2. ServerConfigManager Fix
+### 2. PocoConfigAdapter Fix
 
-- **File**: `src/server_config_manager.cpp`
+- **File**: `src/poco_config_adapter.cpp`
 - **Fix**: Corrected `getProcessingIntervalSeconds()` method to read from the correct config key
 - **Previous Bug**: Method was reading from `duplicate_linker_check_interval` instead of `processing_interval_seconds`
 - **New Implementation**:
@@ -43,8 +43,8 @@ This document describes the implementation of real-time configuration observabil
 ### Configuration Change Flow
 
 1. **API Call**: `PUT /config` with new `processing_interval_seconds` value
-2. **Validation**: `ServerConfigManager::validateConfig()` validates the new configuration
-3. **Update**: `ServerConfigManager::updateConfig()` applies the change and triggers notifications
+2. **Validation**: `PocoConfigAdapter::validateConfig()` validates the new configuration
+3. **Update**: `PocoConfigAdapter::updateConfig()` applies the change and triggers notifications
 4. **Notification**: All registered `ConfigObserver` instances receive `onConfigChanged()` calls
 5. **Reaction**: `SimpleScheduler::onConfigChanged()` logs the change and prepares for the new interval
 6. **Application**: New interval takes effect on the next scheduler loop iteration (within 1 second)

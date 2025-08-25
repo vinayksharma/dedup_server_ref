@@ -86,7 +86,7 @@ set(SOURCES
     src/main.cpp
     src/auth.cpp
     src/file_utils.cpp
-    # src/server_config_manager.cpp  # legacy YAML-based config (removed in Phase 3)
+
     src/poco_config_manager.cpp
     src/poco_config_adapter.cpp
     src/media_processor.cpp
@@ -114,7 +114,7 @@ set(HEADERS
     include/core/file_utils.hpp
     include/core/singleton_manager.hpp
     include/core/dedup_modes.hpp
-    # include/core/server_config_manager.hpp  # legacy YAML-based config (removed in Phase 3)
+
     include/core/poco_config_manager.hpp
     include/core/media_processor.hpp
     include/core/simple_scheduler.hpp

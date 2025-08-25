@@ -92,7 +92,7 @@ echo -e "${GREEN}=== Test Complete ===${NC}"
 echo
 echo "Summary:"
 echo "- processing_interval_seconds was added to config.yaml"
-echo "- ServerConfigManager.getProcessingIntervalSeconds() now reads from config"
+echo "- PocoConfigAdapter.getProcessingIntervalSeconds() now reads from config"
 echo "- SimpleScheduler is registered as a ConfigObserver"
 echo "- Configuration changes are observable in real-time via API"
 echo "- Changes take effect on the next scheduler loop iteration (within 10 seconds)"

@@ -24,7 +24,6 @@ add_executable(dedup_tests
     ../src/duplicate_linker.cpp
     ../src/file_processor.cpp
     ../src/file_scanner.cpp
-    # ../src/server_config_manager.cpp
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
@@ -62,7 +61,6 @@ add_executable(media_processing_orchestrator_test
     media_processing_orchestrator_test.cpp
     ../src/database/database_manager.cpp
     ../src/media_processing_orchestrator.cpp
-    # ../src/server_config_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
     ../src/file_utils.cpp
@@ -106,7 +104,6 @@ add_executable(cache_size_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -138,7 +135,6 @@ add_executable(smart_cache_cleanup_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -170,7 +166,6 @@ add_executable(raw_file_test
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp
@@ -223,7 +218,6 @@ add_executable(media_processor_example
     integration/media_processor_example.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/poco_config_adapter.cpp
     ../src/poco_config_manager.cpp
@@ -251,7 +245,6 @@ add_executable(file_processor_example
     ../src/transcoding_manager.cpp
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
-    # ../src/server_config_manager.cpp
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/database/database_manager.cpp

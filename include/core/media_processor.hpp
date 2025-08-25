@@ -71,7 +71,7 @@ public:
 
 private:
     // Static extension lists - now configuration-driven
-    // These are no longer used as we use ServerConfigManager::getEnabledFileTypes()
+    // These are no longer used as we use PocoConfigAdapter::getEnabledFileTypes()
 
     // Processing algorithm lookup table
     static const std::unordered_map<std::string, std::unordered_map<DedupMode, ProcessingAlgorithm>> processing_algorithms_;

@@ -28,7 +28,7 @@ add_executable(dedup_tests
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
     ../config/src/poco_config_manager.cpp
-    ../src/poco_config_adapter.cpp
+    ../config/src/poco_config_adapter.cpp
 )
 
 target_include_directories(dedup_tests PRIVATE

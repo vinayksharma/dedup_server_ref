@@ -53,7 +53,7 @@ Thumbs.db
 *.log
 
 # Configuration files (may contain sensitive data)
-config.json 
+# config.json - Now tracked as primary configuration file 
 
 # db files
 scan_results.db

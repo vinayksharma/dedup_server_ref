@@ -17,13 +17,26 @@ PocoConfigAdapter::PocoConfigAdapter()
     // Initialize with default config from Poco
     initializeDefaultConfig();
 
-    // Try to load existing config.json first (primary source)
-    if (poco_cfg_.load("config.json"))
+    // Try to load configuration from common locations (project and build dirs)
+    bool loaded = false;
+    const std::vector<std::string> candidate_paths = {
+        "config/config.json",    // prefer project config first
+        "../config/config.json", // running from build/
+        "config.json"            // last resort: local working dir
+    };
+
+    for (const auto &path : candidate_paths)
     {
-        Logger::info("Configuration loaded from config.json (primary source)");
+        if (poco_cfg_.load(path))
+        {
+            Logger::info("Configuration loaded from " + path + " (primary source)");
+            loaded = true;
+            break;
+        }
     }
-    // Fall back to config.yaml if config.json doesn't exist
-    else if (poco_cfg_.load("config.yaml"))
+
+    // Fall back to legacy YAML if present (unlikely)
+    if (!loaded && poco_cfg_.load("config.yaml"))
     {
         Logger::info("Configuration loaded from config.yaml (fallback)");
         // Save the YAML config as JSON for future use
@@ -31,11 +44,13 @@ PocoConfigAdapter::PocoConfigAdapter()
         {
             Logger::info("Migrated config.yaml to config.json");
         }
+        loaded = true;
     }
-    else
+
+    if (!loaded)
     {
         Logger::info("No existing configuration files found, using defaults");
-        // Save the default configuration as JSON
+        // Save the default configuration as JSON in current dir to make it visible
         if (poco_cfg_.save("config.json"))
         {
             Logger::info("Created new config.json with default values");
@@ -801,7 +816,24 @@ bool PocoConfigAdapter::loadConfig(const std::string &file_path)
         return false;
     }
 
-    return poco_cfg_.load(file_path);
+    // Try provided path and common fallbacks relative to current working dir
+    const std::vector<std::string> candidate_paths = {
+        file_path,
+        std::string("../") + file_path,
+        "config/config.json",
+        "../config/config.json",
+        "config.json"};
+
+    for (const auto &path : candidate_paths)
+    {
+        if (poco_cfg_.load(path))
+        {
+            Logger::info("Loaded configuration from " + path);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool PocoConfigAdapter::saveConfig(const std::string &file_path) const

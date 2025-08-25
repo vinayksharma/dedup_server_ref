@@ -44,7 +44,20 @@ protected:
         DatabaseManager::getInstance(test_db_path_);
 
         // Initialize PocoConfigAdapter for tests
-        PocoConfigAdapter::getInstance().loadConfig("config/config.json"); // Load default config for tests
+        auto &config = PocoConfigAdapter::getInstance();
+
+        // Stop any existing file watcher to prevent interference during tests
+        config.stopWatching();
+
+        // Load configuration from the project config directory
+        if (!config.loadConfig("../config/config.json"))
+        {
+            // Fallback to other possible paths
+            if (!config.loadConfig("config/config.json"))
+            {
+                Logger::warn("Could not load configuration for tests, using defaults");
+            }
+        }
 
         Logger::info("TestBase SetUp completed for test: " + std::string(::testing::UnitTest::GetInstance()->current_test_info()->name()));
     }

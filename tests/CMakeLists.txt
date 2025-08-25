@@ -5,29 +5,50 @@
 # UNIT TESTS (Google Test Framework)
 # ============================================================================
 
-# Main unit test executable
-add_executable(dedup_tests
-    status_test.cpp
-    database_manager_test.cpp
-    file_processor_test.cpp
-    file_utils_test.cpp
-    auth_test.cpp
+# Add test source files
+set(TEST_SOURCES
     ../config/tests/poco_config_manager_test.cpp
     ../config/tests/poco_config_adapter_test.cpp
     ../config/tests/test_config_persistence.cpp
+    test_server_config_observer.cpp
+    auth_test.cpp
+    database_manager_test.cpp
+    file_processor_test.cpp
+    file_utils_test.cpp
+    media_processing_orchestrator_test.cpp
+    media_processor_test.cpp
+    status_test.cpp
+    test_env_setup.cpp
+)
+
+# Add source files for dedup_tests
+set(DEDUP_TESTS_SOURCES
+    ../config/src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../src/core/server_config_observer.cpp
+    ../src/media_processor.cpp
+    ../src/file_utils.cpp
+    ../src/auth.cpp
+    ../src/duplicate_linker.cpp
+    ../src/core/memory_pool.cpp
     ../src/database/database_manager.cpp
     ../src/file_processor.cpp
     ../src/file_scanner.cpp
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
-    ../src/media_processor.cpp
-    ../src/file_utils.cpp
-    ../src/auth.cpp
-    ../src/duplicate_linker.cpp
-    ../src/core/memory_pool.cpp
-    ../config/src/poco_config_manager.cpp
-    ../config/src/poco_config_adapter.cpp
+    ../src/media_processing_orchestrator.cpp
+    ../src/thread_pool_manager.cpp
+    ../src/simple_scheduler.cpp
+    ../src/singleton_manager.cpp
+    ../src/cache/decoder_cache.cpp
+    ../src/decoder/media_decoder.cpp
+    ${TEST_SOURCES}
+)
+
+# Main unit test executable
+add_executable(dedup_tests
+    ${DEDUP_TESTS_SOURCES}
 )
 
 target_include_directories(dedup_tests PRIVATE

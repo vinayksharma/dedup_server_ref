@@ -91,6 +91,8 @@ set(SOURCES
     config/src/poco_config_manager.cpp
     config/src/poco_config_adapter.cpp
     src/core/logger_observer.cpp
+    src/core/server_config_observer.cpp
+    src/core/scan_config_observer.cpp
     src/media_processor.cpp
     src/database/database_manager.cpp
     src/file_processor.cpp

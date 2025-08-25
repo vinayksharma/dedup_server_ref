@@ -2,6 +2,7 @@
 #include "database/database_manager.hpp"
 #include "core/media_processor.hpp"
 #include "core/file_utils.hpp"
+#include "test_base.hpp"
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <fstream>
@@ -12,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-class MediaProcessingOrchestratorTest : public ::testing::Test
+class MediaProcessingOrchestratorTest : public TestBase
 {
 protected:
     std::string db_path = "test_orchestrator.db";
@@ -20,6 +21,9 @@ protected:
 
     void SetUp() override
     {
+        // Call parent class SetUp to ensure configuration is loaded
+        TestBase::SetUp();
+
         DatabaseManager::resetForTesting();
         // Remove any existing test DB
         if (fs::exists(db_path))

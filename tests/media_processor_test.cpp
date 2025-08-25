@@ -8,6 +8,9 @@ class MediaProcessorTest : public TestBase
 protected:
     void SetUp() override
     {
+        // Call parent class SetUp to ensure configuration is loaded
+        TestBase::SetUp();
+
         // Set up any common test data
     }
 };

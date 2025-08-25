@@ -101,7 +101,7 @@ public:
      * @brief Handle configuration changes (ConfigObserver implementation)
      * @param event Configuration change event
      */
-    void onConfigChanged(const ConfigEvent &event) override;
+    void onConfigUpdate(const ConfigUpdateEvent &event) override;
 
 private:
     DatabaseManager &dbMan_;

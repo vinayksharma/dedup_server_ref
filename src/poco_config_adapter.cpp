@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
+#include <atomic>
 #include "core/config_observer.hpp"
 
 PocoConfigAdapter::PocoConfigAdapter()
@@ -223,12 +225,10 @@ void PocoConfigAdapter::setDedupMode(DedupMode mode)
     poco_cfg_.update({{"dedup_mode", new_mode}});
 
     // Publish event
-    ConfigEvent event;
-    event.type = ConfigEventType::DEDUP_MODE_CHANGED;
-    event.key = "dedup_mode";
-    event.old_value = old_mode;
-    event.new_value = new_mode;
-    event.description = "Dedup mode changed from " + old_mode + " to " + new_mode;
+    ConfigUpdateEvent event;
+    event.changed_keys = {"dedup_mode"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
 
     publishEvent(event);
 }
@@ -241,12 +241,10 @@ void PocoConfigAdapter::setLogLevel(const std::string &level)
     poco_cfg_.update({{"log_level", level}});
 
     // Publish event
-    ConfigEvent event;
-    event.type = ConfigEventType::LOG_LEVEL_CHANGED;
-    event.key = "log_level";
-    event.old_value = old_level;
-    event.new_value = level;
-    event.description = "Log level changed from " + old_level + " to " + level;
+    ConfigUpdateEvent event;
+    event.changed_keys = {"log_level"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
 
     publishEvent(event);
 }
@@ -259,12 +257,10 @@ void PocoConfigAdapter::setServerPort(int port)
     poco_cfg_.update({{"server_port", port}});
 
     // Publish event
-    ConfigEvent event;
-    event.type = ConfigEventType::SERVER_PORT_CHANGED;
-    event.key = "server_port";
-    event.old_value = std::to_string(old_port);
-    event.new_value = std::to_string(port);
-    event.description = "Server port changed from " + std::to_string(old_port) + " to " + std::to_string(port);
+    ConfigUpdateEvent event;
+    event.changed_keys = {"server_port"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
 
     publishEvent(event);
 }
@@ -277,12 +273,10 @@ void PocoConfigAdapter::setAuthSecret(const std::string &secret)
     poco_cfg_.update({{"auth_secret", secret}});
 
     // Publish event
-    ConfigEvent event;
-    event.type = ConfigEventType::AUTH_SECRET_CHANGED;
-    event.key = "auth_secret";
-    event.old_value = old_secret;
-    event.new_value = secret;
-    event.description = "Auth secret changed";
+    ConfigUpdateEvent event;
+    event.changed_keys = {"auth_secret"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
 
     publishEvent(event);
 }
@@ -299,12 +293,10 @@ void PocoConfigAdapter::updateConfig(const std::string &json_config)
         poco_cfg_.save("config.json");
 
         // Publish general config changed event
-        ConfigEvent event;
-        event.type = ConfigEventType::GENERAL_CONFIG_CHANGED;
-        event.key = "configuration";
-        event.old_value = "";
-        event.new_value = json_config;
-        event.description = "Configuration updated";
+        ConfigUpdateEvent event;
+        event.changed_keys = {"configuration"};
+        event.source = "api";
+        event.update_id = generateUpdateId();
 
         publishEvent(event);
     }
@@ -346,12 +338,10 @@ void PocoConfigAdapter::startWatching(const std::string &file_path, int interval
                     // Reload from Poco config
                     if (poco_cfg_.load(watched_file_path_)) {
                         // Publish reload event
-                        ConfigEvent event;
-                        event.type = ConfigEventType::GENERAL_CONFIG_CHANGED;
-                        event.key = "configuration";
-                        event.old_value = "";
-                        event.new_value = "reloaded";
-                        event.description = "Configuration reloaded from file";
+                        ConfigUpdateEvent event;
+                        event.changed_keys = {"configuration"};
+                        event.source = "file_observer";
+                        event.update_id = generateUpdateId();
                         
                         publishEvent(event);
                         
@@ -451,6 +441,14 @@ void PocoConfigAdapter::updateProcessingConfig(const std::string &json_config)
 
         // Save to file
         poco_cfg_.save("config.json");
+
+        // Publish event
+        ConfigUpdateEvent event;
+        event.changed_keys = {"processing_config"};
+        event.source = "api";
+        event.update_id = generateUpdateId();
+
+        publishEvent(event);
     }
     catch (const std::exception &e)
     {
@@ -479,6 +477,14 @@ void PocoConfigAdapter::updateCacheConfig(const std::string &json_config)
 
         // Save to file
         poco_cfg_.save("config.json");
+
+        // Publish event
+        ConfigUpdateEvent event;
+        event.changed_keys = {"cache_config"};
+        event.source = "api";
+        event.update_id = generateUpdateId();
+
+        publishEvent(event);
     }
     catch (const std::exception &e)
     {
@@ -487,19 +493,26 @@ void PocoConfigAdapter::updateCacheConfig(const std::string &json_config)
 }
 
 // Internal methods
-void PocoConfigAdapter::publishEvent(const ConfigEvent &event)
+void PocoConfigAdapter::publishEvent(const ConfigUpdateEvent &event)
 {
     std::lock_guard<std::mutex> lock(observers_mutex_);
 
     // Log to stdout for immediate visibility
-    std::cout << "[CONFIG CHANGE DETECTED] " << event.description << std::endl;
+    std::cout << "[CONFIG CHANGE DETECTED] " << event.source << " updated: ";
+    for (const auto &key : event.changed_keys)
+    {
+        std::cout << key << " ";
+    }
+    std::cout << std::endl;
 
-    Logger::info("Publishing config event: " + event.description);
+    Logger::info("Publishing config update event from " + event.source + " with " +
+                 std::to_string(event.changed_keys.size()) + " changes");
+
     for (auto observer : observers_)
     {
         try
         {
-            observer->onConfigChanged(event);
+            observer->onConfigUpdate(event);
         }
         catch (const std::exception &e)
         {
@@ -512,4 +525,14 @@ void PocoConfigAdapter::initializeDefaultConfig()
 {
     // Default config is already initialized in PocoConfigManager constructor
     Logger::info("Default configuration initialized");
+}
+
+std::string PocoConfigAdapter::generateUpdateId() const
+{
+    static std::atomic<int> counter{0};
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+                         now.time_since_epoch())
+                         .count();
+    return "update_" + std::to_string(timestamp) + "_" + std::to_string(++counter);
 }

@@ -9,15 +9,20 @@
 class TestConfigObserver : public ConfigObserver
 {
 public:
-    void onConfigChanged(const ConfigEvent &event) override
+    void onConfigUpdate(const ConfigUpdateEvent &event) override
     {
-        if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
+        // Check if dedup_mode was changed
+        for (const auto &key : event.changed_keys)
         {
-            std::cout << "=== CONFIG CHANGE DETECTED ===" << std::endl;
-            std::cout << "Event: " << event.description << std::endl;
-            std::cout << "Old value: " << event.old_value << std::endl;
-            std::cout << "New value: " << event.new_value << std::endl;
-            std::cout << "=============================" << std::endl;
+            if (key == "dedup_mode")
+            {
+                std::cout << "=== CONFIG CHANGE DETECTED ===" << std::endl;
+                std::cout << "Event: dedup_mode changed" << std::endl;
+                std::cout << "Source: " << event.source << std::endl;
+                std::cout << "Update ID: " << event.update_id << std::endl;
+                std::cout << "=============================" << std::endl;
+                break;
+            }
         }
     }
 };

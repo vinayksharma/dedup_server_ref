@@ -307,17 +307,16 @@ void FileProcessor::handleComplete()
                  ", Successful: " + std::to_string(successful_files_processed_));
 }
 
-void FileProcessor::onConfigChanged(const ConfigEvent &event)
+void FileProcessor::onConfigUpdate(const ConfigUpdateEvent &event)
 {
-    if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
+    // Check if dedup_mode was changed
+    for (const auto &key : event.changed_keys)
     {
-        std::cout << "[CONFIG CHANGE] FileProcessor: Deduplication mode changed from " +
-                         event.old_value + " to " +
-                         event.new_value + " - will use new mode for future processing"
-                  << std::endl;
-
-        Logger::info("FileProcessor: Deduplication mode changed from " +
-                     event.old_value + " to " +
-                     event.new_value + " - will use new mode for future processing");
+        if (key == "dedup_mode")
+        {
+            std::cout << "[CONFIG CHANGE] FileProcessor: Deduplication mode changed - will use new mode for future processing" << std::endl;
+            Logger::info("FileProcessor: Deduplication mode changed - will use new mode for future processing");
+            break;
+        }
     }
 }

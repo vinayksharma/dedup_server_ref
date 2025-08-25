@@ -245,20 +245,19 @@ void DuplicateLinker::workerLoop()
     }
 }
 
-void DuplicateLinker::onConfigChanged(const ConfigEvent &event)
+void DuplicateLinker::onConfigUpdate(const ConfigUpdateEvent &event)
 {
-    if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
+    // Check if dedup_mode was changed
+    for (const auto &key : event.changed_keys)
     {
-        std::cout << "[CONFIG CHANGE] DuplicateLinker: Deduplication mode changed from " +
-                         event.old_value + " to " +
-                         event.new_value + " - will use new mode for future linking"
-                  << std::endl;
+        if (key == "dedup_mode")
+        {
+            std::cout << "[CONFIG CHANGE] DuplicateLinker: Deduplication mode changed - will use new mode for future linking" << std::endl;
+            Logger::info("DuplicateLinker: Deduplication mode changed - will use new mode for future linking");
 
-        Logger::info("DuplicateLinker: Deduplication mode changed from " +
-                     event.old_value + " to " +
-                     event.new_value + " - will use new mode for future linking");
-
-        // Request a full rescan when mode changes to ensure links are updated for the new mode
-        requestFullRescan();
+            // Request a full rescan when mode changes to ensure links are updated for the new mode
+            requestFullRescan();
+            break;
+        }
     }
 }

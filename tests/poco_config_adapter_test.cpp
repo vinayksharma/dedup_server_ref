@@ -5,30 +5,8 @@
 #include <fstream>
 #include <filesystem>
 
-// Define ConfigEvent and ConfigObserver for testing
-struct ConfigEvent
-{
-    enum Type
-    {
-        DEDUP_MODE_CHANGED,
-        LOG_LEVEL_CHANGED,
-        SERVER_PORT_CHANGED,
-        AUTH_SECRET_CHANGED,
-        GENERAL_CONFIG_CHANGED
-    };
-    Type type;
-    std::string key;
-    std::string old_value;
-    std::string new_value;
-    std::string description;
-};
-
-class ConfigObserver
-{
-public:
-    virtual ~ConfigObserver() = default;
-    virtual void onConfigChanged(const ConfigEvent &event) = 0;
-};
+// Include the new config observer interface
+#include "core/config_observer.hpp"
 
 class PocoConfigAdapterTest : public ::testing::Test
 {
@@ -316,13 +294,13 @@ TEST_F(PocoConfigAdapterTest, ObserverPattern)
     class MockObserver : public ConfigObserver
     {
     public:
-        void onConfigChanged(const ConfigEvent &event) override
+        void onConfigUpdate(const ConfigUpdateEvent &event) override
         {
             last_event_ = event;
             event_count_++;
         }
 
-        ConfigEvent last_event_;
+        ConfigUpdateEvent last_event_;
         int event_count_ = 0;
     };
 
@@ -336,8 +314,9 @@ TEST_F(PocoConfigAdapterTest, ObserverPattern)
 
     // Verify event was published
     EXPECT_EQ(observer.event_count_, 1);
-    EXPECT_EQ(observer.last_event_.type, ConfigEvent::DEDUP_MODE_CHANGED);
-    EXPECT_EQ(observer.last_event_.key, "dedup_mode");
+    EXPECT_EQ(observer.last_event_.source, "api");
+    EXPECT_FALSE(observer.last_event_.changed_keys.empty());
+    EXPECT_EQ(observer.last_event_.changed_keys[0], "dedup_mode");
 
     // Unsubscribe observer
     config.unsubscribe(&observer);

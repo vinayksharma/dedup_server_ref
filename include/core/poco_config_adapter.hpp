@@ -2,6 +2,7 @@
 
 #include "core/poco_config_manager.hpp"
 #include "core/dedup_modes.hpp"
+#include "core/config_observer.hpp"
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>
@@ -12,7 +13,6 @@
 
 // Forward declarations
 class ConfigObserver;
-struct ConfigEvent;
 
 /**
  * @brief Configuration adapter that provides the legacy ServerConfigManager interface
@@ -129,8 +129,9 @@ private:
     PocoConfigAdapter &operator=(const PocoConfigAdapter &) = delete;
 
     // Internal methods
-    void publishEvent(const ConfigEvent &event);
+    void publishEvent(const ConfigUpdateEvent &event);
     void initializeDefaultConfig();
+    std::string generateUpdateId() const;
 
     // Reference to the underlying Poco configuration manager
     PocoConfigManager &poco_cfg_;

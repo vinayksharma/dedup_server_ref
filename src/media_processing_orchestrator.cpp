@@ -359,22 +359,21 @@ void MediaProcessingOrchestrator::stopTimerBasedProcessing()
     Logger::info("Timer-based processing stopped");
 }
 
-void MediaProcessingOrchestrator::onConfigChanged(const ConfigEvent &event)
+void MediaProcessingOrchestrator::onConfigUpdate(const ConfigUpdateEvent &event)
 {
-    if (event.type == ConfigEventType::DEDUP_MODE_CHANGED)
+    // Check if dedup_mode was changed
+    for (const auto &key : event.changed_keys)
     {
-        std::cout << "[CONFIG CHANGE] MediaProcessingOrchestrator: Deduplication mode changed from " +
-                         event.old_value + " to " +
-                         event.new_value + " - will use new mode for future processing"
-                  << std::endl;
+        if (key == "dedup_mode")
+        {
+            std::cout << "[CONFIG CHANGE] MediaProcessingOrchestrator: Deduplication mode changed - will use new mode for future processing" << std::endl;
+            Logger::info("MediaProcessingOrchestrator: Deduplication mode changed - will use new mode for future processing");
 
-        Logger::info("MediaProcessingOrchestrator: Deduplication mode changed from " +
-                     event.old_value + " to " +
-                     event.new_value + " - will use new mode for future processing");
-
-        // Note: We don't need to restart processing here since each processing run
-        // queries the current mode via PocoConfigAdapter::getInstance().getDedupMode()
-        // This ensures that new processing runs will use the updated mode
+            // Note: We don't need to restart processing here since each processing run
+            // queries the current mode via PocoConfigAdapter::getInstance().getDedupMode()
+            // This ensures that new processing runs will use the updated mode
+            break;
+        }
     }
 }
 

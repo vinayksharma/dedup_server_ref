@@ -17,6 +17,7 @@
 #include "core/duplicate_linker.hpp"
 #include "core/resource_monitor.hpp"
 #include "core/crash_recovery.hpp"
+#include "core/logger_observer.hpp"
 #include <httplib.h>
 #include <iostream>
 #include <memory>
@@ -98,6 +99,10 @@ int main(int argc, char *argv[])
 
     // Initialize logger with configured log level
     Logger::init(config_manager.getLogLevel());
+
+    // Create and register logger observer for runtime log level changes
+    auto logger_observer = std::make_unique<LoggerObserver>();
+    config_manager.subscribe(logger_observer.get());
 
     // Start watching configuration for runtime changes
     config_manager.startWatching("config.json", 2);

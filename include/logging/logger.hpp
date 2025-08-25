@@ -38,6 +38,33 @@ public:
         logger->set_level(level);
     }
 
+    static void setLevel(const std::string &log_level)
+    {
+        auto logger = getLogger();
+
+        // Convert string log level to spdlog level
+        spdlog::level::level_enum level;
+        if (log_level == "TRACE")
+            level = spdlog::level::trace;
+        else if (log_level == "DEBUG")
+            level = spdlog::level::debug;
+        else if (log_level == "INFO")
+            level = spdlog::level::info;
+        else if (log_level == "WARN")
+            level = spdlog::level::warn;
+        else if (log_level == "ERROR")
+            level = spdlog::level::err;
+        else
+        {
+            // Log warning and default to INFO for invalid levels
+            warn("Invalid log level: " + log_level + ", defaulting to INFO");
+            level = spdlog::level::info;
+        }
+
+        logger->set_level(level);
+        info("Log level changed to: " + log_level);
+    }
+
     static void trace(const std::string &message)
     {
         log(Level::TRACE, message);

@@ -107,7 +107,7 @@ public:
      * @brief Configuration change handler for dynamic updates
      * @param event Configuration change event
      */
-    void onConfigChanged(const ConfigEvent &event) override;
+    void onConfigUpdate(const ConfigUpdateEvent &event) override;
 
     // FIXED: Made constructor public so it can be used with std::make_unique
     ThreadPoolManager() = default;

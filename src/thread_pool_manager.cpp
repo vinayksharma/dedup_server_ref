@@ -162,30 +162,34 @@ size_t ThreadPoolManager::getMaxAllowedThreadCount()
     }
 }
 
-void ThreadPoolManager::onConfigChanged(const ConfigEvent &event)
+void ThreadPoolManager::onConfigUpdate(const ConfigUpdateEvent &event)
 {
-    if (event.type == ConfigEventType::GENERAL_CONFIG_CHANGED ||
-        event.key == "max_processing_threads")
+    // Check if relevant configuration keys were changed
+    for (const auto &key : event.changed_keys)
     {
-        try
+        if (key == "max_processing_threads" || key == "configuration")
         {
-            auto &config_manager = PocoConfigAdapter::getInstance();
-            size_t new_thread_count = static_cast<size_t>(config_manager.getMaxProcessingThreads());
-
-            Logger::info("Configuration change detected - max_processing_threads: " + std::to_string(new_thread_count));
-
-            if (resizeThreadPool(new_thread_count))
+            try
             {
-                Logger::info("Thread pool successfully resized due to configuration change");
+                auto &config_manager = PocoConfigAdapter::getInstance();
+                size_t new_thread_count = static_cast<size_t>(config_manager.getMaxProcessingThreads());
+
+                Logger::info("Configuration change detected - max_processing_threads: " + std::to_string(new_thread_count));
+
+                if (resizeThreadPool(new_thread_count))
+                {
+                    Logger::info("Thread pool successfully resized due to configuration change");
+                }
+                else
+                {
+                    Logger::warn("Failed to resize thread pool due to configuration change");
+                }
             }
-            else
+            catch (const std::exception &e)
             {
-                Logger::warn("Failed to resize thread pool due to configuration change");
+                Logger::error("Error handling thread count configuration change: " + std::string(e.what()));
             }
-        }
-        catch (const std::exception &e)
-        {
-            Logger::error("Error handling thread count configuration change: " + std::string(e.what()));
+            break;
         }
     }
 }

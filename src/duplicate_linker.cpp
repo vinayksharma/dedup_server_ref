@@ -1,6 +1,6 @@
 #include "core/duplicate_linker.hpp"
 #include "database/database_manager.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>

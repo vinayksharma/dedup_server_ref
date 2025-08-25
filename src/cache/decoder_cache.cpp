@@ -1,5 +1,5 @@
 #include "core/cache/decoder_cache.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 
 DecoderCache::DecoderCache()

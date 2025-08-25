@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "core/poco_config_manager.hpp"
+#include "poco_config_manager.hpp"
 #include "core/dedup_modes.hpp"
 #include "logging/logger.hpp"
 #include <fstream>

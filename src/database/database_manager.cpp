@@ -1,5 +1,5 @@
 #include "database/database_manager.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "core/duplicate_linker.hpp"
 #include "core/dedup_modes.hpp"
 #include "core/media_processor.hpp"

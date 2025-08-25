@@ -1,4 +1,4 @@
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <iostream>
 #include <vector>

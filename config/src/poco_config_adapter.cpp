@@ -1,4 +1,4 @@
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <atomic>
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 
 PocoConfigAdapter::PocoConfigAdapter()
     : poco_cfg_(PocoConfigManager::getInstance())

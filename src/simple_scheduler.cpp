@@ -1,5 +1,5 @@
 #include "core/simple_scheduler.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <chrono>
 

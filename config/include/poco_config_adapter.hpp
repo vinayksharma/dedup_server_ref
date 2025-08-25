@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/poco_config_manager.hpp"
+#include "poco_config_manager.hpp"
 #include "core/dedup_modes.hpp"
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <mutex>

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../../include/core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "../../include/core/dedup_modes.hpp"
 #include "../../include/logging/logger.hpp"
 

@@ -1,5 +1,5 @@
 #include "core/decoder/media_decoder.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "core/cache/decoder_cache.hpp"
 #include "logging/logger.hpp"
 

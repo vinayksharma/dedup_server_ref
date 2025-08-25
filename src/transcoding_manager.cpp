@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <chrono>
 #include <iostream> // Required for std::cerr
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include <libraw/libraw.h>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>

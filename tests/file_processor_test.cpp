@@ -1,7 +1,7 @@
 #include "core/file_processor.hpp"
 #include "core/file_scanner.hpp"
 #include "database/database_manager.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "test_base.hpp"
 #include <filesystem>
 #include <fstream>

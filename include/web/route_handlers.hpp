@@ -3,7 +3,7 @@
 #include "database/database_manager.hpp"
 #include "database/db_performance_logger.hpp"
 #include "core/media_processing_orchestrator.hpp"
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 #include "logging/logger.hpp"
 #include <httplib.h>
 #include <nlohmann/json.hpp>
@@ -21,7 +21,7 @@
 #include "core/transcoding_manager.hpp"
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 
 using json = nlohmann::json;
 
@@ -386,10 +386,10 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &config = PocoConfigAdapter::getInstance();
-            if (file_path.empty())
-                file_path = "config.json";
-            if (config.loadConfig(file_path))
+                    auto &config = PocoConfigAdapter::getInstance();
+        if (file_path.empty())
+            file_path = "config/config.json";
+        if (config.loadConfig(file_path))
             {
                 res.set_content(json{{"message", "Configuration reloaded successfully"}}.dump(), "application/json");
                 Logger::info("Configuration reloaded from: " + file_path);
@@ -416,10 +416,10 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-            auto &config = PocoConfigAdapter::getInstance();
-            if (file_path.empty())
-                file_path = "config.json";
-            if (config.saveConfig(file_path))
+                    auto &config = PocoConfigAdapter::getInstance();
+        if (file_path.empty())
+            file_path = "config/config.json";
+        if (config.saveConfig(file_path))
             {
                 res.set_content(json{{"message", "Configuration saved successfully"}}.dump(), "application/json");
                 Logger::info("Configuration saved to: " + file_path);

@@ -4,7 +4,7 @@
 #include "database/database_manager.hpp"
 #include "core/duplicate_linker.hpp"
 #include "logging/logger.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include <chrono>
 #include <thread>
 #include <condition_variable>

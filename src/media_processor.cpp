@@ -10,7 +10,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "yaml-cpp/yaml.h"
 
 // FFmpeg headers for video processing

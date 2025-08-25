@@ -11,7 +11,7 @@
 #include <mutex>
 #include "database/database_manager.hpp"
 #include "media_processing_orchestrator.hpp"
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 #include "logging/logger.hpp"
 
 // Forward declarations

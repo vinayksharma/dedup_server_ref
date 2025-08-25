@@ -14,8 +14,8 @@ add_executable(dedup_tests
     media_processor_test.cpp
     file_processor_test.cpp
     database_manager_test.cpp
-    poco_config_manager_test.cpp
-    poco_config_adapter_test.cpp
+    ../config/tests/poco_config_manager_test.cpp
+    ../config/tests/poco_config_adapter_test.cpp
     ../src/auth.cpp
     ../src/file_utils.cpp
     ../src/media_processor.cpp
@@ -27,12 +27,13 @@ add_executable(dedup_tests
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_manager.cpp
     ../src/poco_config_adapter.cpp
 )
 
 target_include_directories(dedup_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/config/include
     $<TARGET_PROPERTY:spdlog::spdlog,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
@@ -68,8 +69,8 @@ add_executable(media_processing_orchestrator_test
     ../src/mount_manager.cpp
     ../src/duplicate_linker.cpp
     ../src/transcoding_manager.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(media_processing_orchestrator_test
@@ -110,8 +111,8 @@ add_executable(cache_size_test
     ../src/file_processor.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(cache_size_test PRIVATE
@@ -140,8 +141,8 @@ add_executable(smart_cache_cleanup_test
     ../src/database/database_manager.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(smart_cache_cleanup_test PRIVATE
@@ -171,8 +172,8 @@ add_executable(raw_file_test
     ../src/database/database_manager.cpp
     ../src/file_utils.cpp
     ../src/database/db_performance_logger.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(raw_file_test PRIVATE
@@ -192,9 +193,9 @@ target_link_libraries(raw_file_test PRIVATE
 )
 
 add_executable(file_type_config_test
-    integration/file_type_config_test.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/tests/file_type_config_test.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(file_type_config_test PRIVATE
@@ -219,8 +220,8 @@ add_executable(media_processor_example
     ../src/media_processor.cpp
     ../src/core/memory_pool.cpp
     ../src/mount_manager.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(media_processor_example PRIVATE
@@ -250,8 +251,8 @@ add_executable(file_processor_example
     ../src/database/database_manager.cpp
     ../src/database/db_performance_logger.cpp
     ../src/file_utils.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(file_processor_example PRIVATE
@@ -277,9 +278,9 @@ add_executable(file_utils_example
 )
 
 add_executable(debug_config
-    integration/debug_config.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/tests/debug_config.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(debug_config PRIVATE
@@ -300,8 +301,8 @@ target_link_libraries(debug_config PRIVATE
 
 add_executable(test_mode_change
     integration/test_mode_change.cpp
-    ../src/poco_config_adapter.cpp
-    ../src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../config/src/poco_config_manager.cpp
 )
 
 target_link_libraries(test_mode_change PRIVATE
@@ -345,18 +346,18 @@ add_executable(raw_to_jpeg
 # ============================================================================
 
 # Common include directories for all integration tests
-target_include_directories(cache_size_test PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(smart_cache_cleanup_test PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(raw_file_test PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(file_type_config_test PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(media_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(file_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(file_utils_example PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(debug_config PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(test_mode_change PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(migrate_to_relative_paths PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(libraw_probe PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(raw_to_jpeg PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(cache_size_test PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(smart_cache_cleanup_test PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(raw_file_test PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(file_type_config_test PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(media_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(file_processor_example PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(file_utils_example PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(debug_config PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(test_mode_change PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(migrate_to_relative_paths PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(libraw_probe PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
+target_include_directories(raw_to_jpeg PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/config/include)
 
 # Common link libraries for integration tests
 target_link_libraries(cache_size_test

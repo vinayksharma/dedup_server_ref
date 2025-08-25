@@ -73,6 +73,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include/web
     ${CMAKE_SOURCE_DIR}/include/logging
     ${CMAKE_SOURCE_DIR}/include/third_party
+    ${CMAKE_SOURCE_DIR}/config/include
     ${OPENSSL_INCLUDE_DIR}
     ${nlohmann_json_INCLUDE_DIRS}
     /opt/homebrew/include
@@ -87,8 +88,8 @@ set(SOURCES
     src/auth.cpp
     src/file_utils.cpp
 
-    src/poco_config_manager.cpp
-    src/poco_config_adapter.cpp
+    config/src/poco_config_manager.cpp
+    config/src/poco_config_adapter.cpp
     src/core/logger_observer.cpp
     src/media_processor.cpp
     src/database/database_manager.cpp
@@ -116,7 +117,7 @@ set(HEADERS
     include/core/singleton_manager.hpp
     include/core/dedup_modes.hpp
 
-    include/core/poco_config_manager.hpp
+    config/include/poco_config_manager.hpp
     include/core/media_processor.hpp
     include/core/simple_scheduler.hpp
     include/core/file_scanner.hpp
@@ -128,7 +129,7 @@ set(HEADERS
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
     include/web/route_handlers.hpp
-    include/core/server_config.hpp
+    config/include/server_config.hpp
     include/core/mount_manager.hpp
     include/core/cache/decoder_cache.hpp
     include/core/decoder/media_decoder.hpp

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "../../include/core/poco_config_adapter.hpp"
-#include "../../include/core/config_observer.hpp"
+#include "../../config/include/poco_config_adapter.hpp"
+#include "../../config/include/config_observer.hpp"
 #include "../../include/core/dedup_modes.hpp"
 #include "../../include/logging/logger.hpp"
 
@@ -46,8 +46,8 @@ int main()
     std::cout << "Subscribed to configuration changes" << std::endl;
 
     // Start watching config file
-    config_manager.startWatching("config.json", 1);
-    std::cout << "Started watching config.json" << std::endl;
+            config_manager.startWatching("config/config.json", 1);
+        std::cout << "Started watching config/config.json" << std::endl;
 
     // Test 1: Change mode via API
     std::cout << "\n=== Test 1: Changing mode via API ===" << std::endl;
@@ -111,7 +111,7 @@ int main()
 
     // Stop watching
     config_manager.stopWatching();
-    std::cout << "\nStopped watching config.json" << std::endl;
+            std::cout << "\nStopped watching config/config.json" << std::endl;
 
     std::cout << "\n=== Test Complete ===" << std::endl;
     return 0;

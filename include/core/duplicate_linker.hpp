@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "core/dedup_modes.hpp"
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 
 class DatabaseManager;
 

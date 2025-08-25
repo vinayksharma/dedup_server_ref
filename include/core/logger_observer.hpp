@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 #include "logging/logger.hpp"
 
 /**

@@ -7,9 +7,9 @@
 #include "auth/auth.hpp"
 #include "logging/logger.hpp"
 #include "database/database_manager.hpp"
-#include "core/config_observer.hpp"
-#include "core/server_config.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "config_observer.hpp"
+#include "server_config.hpp"
+#include "poco_config_adapter.hpp"
 #include "core/simple_scheduler.hpp"
 #include "web/openapi_docs.hpp"
 #include "core/status.hpp"
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     config_manager.subscribe(logger_observer.get());
 
     // Start watching configuration for runtime changes
-    config_manager.startWatching("config.json", 2);
+    config_manager.startWatching("config/config.json", 2);
 
     // Initialize safety mechanisms for external library calls
     Logger::info("Initializing safety mechanisms...");

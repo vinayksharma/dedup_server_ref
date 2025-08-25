@@ -1,7 +1,7 @@
 #include "core/file_processor.hpp"
 #include "database/database_manager.hpp"
 #include "core/media_processor.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <iostream>
 

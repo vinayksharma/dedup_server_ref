@@ -1,4 +1,4 @@
-#include "core/poco_config_manager.hpp"
+#include "poco_config_manager.hpp"
 #include "logging/logger.hpp"
 #include <fstream>
 #include <sstream>

@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "core/dedup_modes.hpp"
 #include "logging/logger.hpp"
 #include <fstream>
 #include <filesystem>
 
 // Include the new config observer interface
-#include "core/config_observer.hpp"
+#include "config_observer.hpp"
 
 class PocoConfigAdapterTest : public ::testing::Test
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "core/server_config.hpp"
+#include "server_config.hpp"
 
 class OpenApiDocs
 {

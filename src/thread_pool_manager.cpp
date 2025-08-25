@@ -4,7 +4,7 @@
 #include "core/file_utils.hpp"
 #include "core/transcoding_manager.hpp"
 #include "core/duplicate_linker.hpp"
-#include "core/poco_config_adapter.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
 #include <chrono>

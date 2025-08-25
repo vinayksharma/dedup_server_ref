@@ -363,3 +363,5 @@ TEST_F(PocoConfigAdapterTest, DefaultValues)
     EXPECT_EQ(config.getPreProcessQualityStack(), true);
     EXPECT_EQ(config.getDecoderCacheSizeMB(), 512);
 }
+
+// Note: main() function removed - this test is linked into dedup_tests executable

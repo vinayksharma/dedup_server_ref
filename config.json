@@ -1,0 +1,63 @@
+{
+  "auth_secret": "test-secret-key",
+  "cache": {
+    "decoder_cache_size_mb": 512
+  },
+  "categories": {
+    "audio": {
+      "mp3": true,
+      "wav": false
+    },
+    "images": {
+      "gif": false,
+      "jpg": true,
+      "png": false
+    },
+    "raw": {
+      "cr2": true,
+      "nef": false
+    },
+    "video": {
+      "avi": false,
+      "mov": true,
+      "mp4": true
+    }
+  },
+  "database": {
+    "retry": {
+      "backoff_base_ms": 200,
+      "max_attempts": 5,
+      "max_backoff_ms": 2000
+    },
+    "timeout": {
+      "busy_timeout_ms": 45000,
+      "operation_timeout_ms": 90000
+    }
+  },
+  "dedup_mode": "QUALITY",
+  "log_level": "TRACE",
+  "max_processing_threads": 16,
+  "pre_process_quality_stack": true,
+  "processing": {
+    "batch_size": 50
+  },
+  "processing_interval_seconds": 900,
+  "scan_interval_seconds": 1800,
+  "server_host": "test-host",
+  "server_port": 8081,
+  "supported_file_types": {
+    "jpg": true,
+    "png": false
+  },
+  "threading": {
+    "database_threads": 1,
+    "http_server_threads": "manual",
+    "max_decoder_threads": 2,
+    "max_processing_threads": 16,
+    "max_scan_threads": 2
+  },
+  "transcoding_file_types": {
+    "cr2": true,
+    "nef": false
+  }
+}

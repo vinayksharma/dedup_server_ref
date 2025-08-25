@@ -224,6 +224,9 @@ void PocoConfigAdapter::setDedupMode(DedupMode mode)
     // Update Poco config
     poco_cfg_.update({{"dedup_mode", new_mode}});
 
+    // Persist changes to config.json
+    persistChanges("dedup_mode");
+
     // Publish event
     ConfigUpdateEvent event;
     event.changed_keys = {"dedup_mode"};
@@ -239,6 +242,9 @@ void PocoConfigAdapter::setLogLevel(const std::string &level)
 
     // Update Poco config
     poco_cfg_.update({{"log_level", level}});
+
+    // Persist changes to config.json
+    persistChanges("log_level");
 
     // Publish event
     ConfigUpdateEvent event;
@@ -256,6 +262,9 @@ void PocoConfigAdapter::setServerPort(int port)
     // Update Poco config
     poco_cfg_.update({{"server_port", port}});
 
+    // Persist changes to config.json
+    persistChanges("server_port");
+
     // Publish event
     ConfigUpdateEvent event;
     event.changed_keys = {"server_port"};
@@ -272,6 +281,9 @@ void PocoConfigAdapter::setAuthSecret(const std::string &secret)
     // Update Poco config
     poco_cfg_.update({{"auth_secret", secret}});
 
+    // Persist changes to config.json
+    persistChanges("auth_secret");
+
     // Publish event
     ConfigUpdateEvent event;
     event.changed_keys = {"auth_secret"};
@@ -280,6 +292,391 @@ void PocoConfigAdapter::setAuthSecret(const std::string &secret)
 
     publishEvent(event);
 }
+
+void PocoConfigAdapter::setServerHost(const std::string &host)
+{
+    // Update Poco config
+    poco_cfg_.update({{"server_host", host}});
+
+    // Persist changes to config.json
+    persistChanges("server_host");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"server_host"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setScanIntervalSeconds(int seconds)
+{
+    // Update Poco config
+    poco_cfg_.update({{"scan_interval_seconds", seconds}});
+
+    // Persist changes to config.json
+    persistChanges("scan_interval_seconds");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"scan_interval_seconds"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setProcessingIntervalSeconds(int seconds)
+{
+    // Update Poco config
+    poco_cfg_.update({{"processing_interval_seconds", seconds}});
+
+    // Persist changes to config.json
+    persistChanges("processing_interval_seconds");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"processing_interval_seconds"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setMaxProcessingThreads(int threads)
+{
+    // Update Poco config
+    poco_cfg_.update({{"max_processing_threads", threads}});
+
+    // Persist changes to config.json
+    persistChanges("max_processing_threads");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"max_processing_threads"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setMaxScanThreads(int threads)
+{
+    // Update Poco config
+    poco_cfg_.update({{"max_scan_threads", threads}});
+
+    // Persist changes to config.json
+    persistChanges("max_scan_threads");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"max_scan_threads"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setHttpServerThreads(const std::string &threads)
+{
+    // Update Poco config
+    poco_cfg_.update({{"http_server_threads", threads}});
+
+    // Persist changes to config.json
+    persistChanges("http_server_threads");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"http_server_threads"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseThreads(int threads)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_threads", threads}});
+
+    // Persist changes to config.json
+    persistChanges("database_threads");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_threads"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setMaxDecoderThreads(int threads)
+{
+    // Update Poco config
+    poco_cfg_.update({{"max_decoder_threads", threads}});
+
+    // Persist changes to config.json
+    persistChanges("max_decoder_threads");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"max_decoder_threads"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setProcessingBatchSize(int batch_size)
+{
+    // Update Poco config
+    poco_cfg_.update({{"processing_batch_size", batch_size}});
+
+    // Persist changes to config.json
+    persistChanges("processing_batch_size");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"processing_batch_size"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setPreProcessQualityStack(bool enabled)
+{
+    // Update Poco config
+    poco_cfg_.update({{"pre_process_quality_stack", enabled}});
+
+    // Persist changes to config.json
+    persistChanges("pre_process_quality_stack");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"pre_process_quality_stack"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDecoderCacheSizeMB(uint32_t size_mb)
+{
+    // Update Poco config
+    poco_cfg_.update({{"decoder_cache_size_mb", size_mb}});
+
+    // Persist changes to config.json
+    persistChanges("decoder_cache_size_mb");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"decoder_cache_size_mb"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseMaxRetries(int max_retries)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_max_retries", max_retries}});
+
+    // Persist changes to config.json
+    persistChanges("database_max_retries");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_max_retries"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseBackoffBaseMs(int backoff_ms)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_backoff_base_ms", backoff_ms}});
+
+    // Persist changes to config.json
+    persistChanges("database_backoff_base_ms");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_backoff_base_ms"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseMaxBackoffMs(int max_backoff_ms)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_max_backoff_ms", max_backoff_ms}});
+
+    // Persist changes to config.json
+    persistChanges("database_max_backoff_ms");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_max_backoff_ms"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseBusyTimeoutMs(int timeout_ms)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_busy_timeout_ms", timeout_ms}});
+
+    // Persist changes to config.json
+    persistChanges("database_busy_timeout_ms");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_busy_timeout_ms"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setDatabaseOperationTimeoutMs(int timeout_ms)
+{
+    // Update Poco config
+    poco_cfg_.update({{"database_operation_timeout_ms", timeout_ms}});
+
+    // Persist changes to config.json
+    persistChanges("database_operation_timeout_ms");
+
+    // Publish event
+    ConfigUpdateEvent event;
+    event.changed_keys = {"database_operation_timeout_ms"};
+    event.source = "api";
+    event.update_id = generateUpdateId();
+
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setFileTypeEnabled(const std::string &category, const std::string &extension, bool enabled)
+{
+    // Create JSON patch for the specific category.extension
+    nlohmann::json patch;
+    patch["categories"][category][extension] = enabled;
+
+    poco_cfg_.update(patch);
+    persistChanges("categories." + category + "." + extension);
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"categories." + category + "." + extension};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "setFileTypeEnabled";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setTranscodingFileType(const std::string &extension, bool enabled)
+{
+    // Create JSON patch for transcoding extension
+    nlohmann::json patch;
+    patch["transcoding"][extension] = enabled;
+
+    poco_cfg_.update(patch);
+    persistChanges("transcoding." + extension);
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"transcoding." + extension};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "setTranscodingFileType";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::updateFileTypeConfig(const std::string &category, const std::string &extension, bool enabled)
+{
+    // Create JSON patch for the specific category.extension
+    nlohmann::json patch;
+    patch["categories"][category][extension] = enabled;
+
+    poco_cfg_.update(patch);
+    persistChanges("categories." + category + "." + extension);
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"categories." + category + "." + extension};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "updateFileTypeConfig";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setVideoSkipDurationSeconds(int seconds)
+{
+    // Create JSON patch for video skip duration
+    nlohmann::json patch;
+    patch["video"]["skip_duration_seconds"] = seconds;
+
+    poco_cfg_.update(patch);
+    persistChanges("video.skip_duration_seconds");
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"video.skip_duration_seconds"};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "setVideoSkipDurationSeconds";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setVideoFramesPerSkip(int frames)
+{
+    // Create JSON patch for video frames per skip
+    nlohmann::json patch;
+    patch["video"]["frames_per_skip"] = frames;
+
+    poco_cfg_.update(patch);
+    persistChanges("video.frames_per_skip");
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"video.frames_per_skip"};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "setVideoFramesPerSkip";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+void PocoConfigAdapter::setVideoSkipCount(int count)
+{
+    // Create JSON patch for video skip count
+    nlohmann::json patch;
+    patch["video"]["skip_count"] = count;
+
+    poco_cfg_.update(patch);
+    persistChanges("video.skip_count");
+
+    // Publish configuration change event
+    std::vector<std::string> changed_keys = {"video.skip_count"};
+    ConfigUpdateEvent event;
+    event.changed_keys = changed_keys;
+    event.source = "setVideoSkipCount";
+    event.update_id = generateUpdateId();
+    publishEvent(event);
+}
+
+// Remove bulk update method - keeping only specific setters
+// void PocoConfigAdapter::updateConfigAndPersist(const nlohmann::json &config_updates, const std::vector<std::string> &changed_keys) {
+//     // Implementation removed for cleaner API
+// }
 
 void PocoConfigAdapter::updateConfig(const std::string &json_config)
 {
@@ -529,10 +926,30 @@ void PocoConfigAdapter::initializeDefaultConfig()
 
 std::string PocoConfigAdapter::generateUpdateId() const
 {
-    static std::atomic<int> counter{0};
     auto now = std::chrono::system_clock::now();
-    auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
-                         now.time_since_epoch())
-                         .count();
-    return "update_" + std::to_string(timestamp) + "_" + std::to_string(++counter);
+    auto duration = now.time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    return "update_" + std::to_string(millis);
 }
+
+void PocoConfigAdapter::persistChanges(const std::string &changed_key)
+{
+    try
+    {
+        // Save configuration to config.json
+        if (!poco_cfg_.save("config.json"))
+        {
+            Logger::error("Failed to persist configuration changes to config.json");
+            return;
+        }
+
+        Logger::info("Configuration changes persisted to config.json" +
+                     (changed_key.empty() ? "" : " (key: " + changed_key + ")"));
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Exception while persisting configuration: " + std::string(e.what()));
+    }
+}
+
+// Configuration setters with event publishing

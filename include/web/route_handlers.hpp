@@ -386,10 +386,10 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-                    auto &config = PocoConfigAdapter::getInstance();
-        if (file_path.empty())
-            file_path = "config/config.json";
-        if (config.loadConfig(file_path))
+            auto &config = PocoConfigAdapter::getInstance();
+            if (file_path.empty())
+                file_path = "config/config.json";
+            if (config.loadConfig(file_path))
             {
                 res.set_content(json{{"message", "Configuration reloaded successfully"}}.dump(), "application/json");
                 Logger::info("Configuration reloaded from: " + file_path);
@@ -416,10 +416,10 @@ private:
             auto body = json::parse(req.body);
             std::string file_path = body["file_path"];
 
-                    auto &config = PocoConfigAdapter::getInstance();
-        if (file_path.empty())
-            file_path = "config/config.json";
-        if (config.saveConfig(file_path))
+            auto &config = PocoConfigAdapter::getInstance();
+            if (file_path.empty())
+                file_path = "config/config.json";
+            if (config.saveConfig(file_path))
             {
                 res.set_content(json{{"message", "Configuration saved successfully"}}.dump(), "application/json");
                 Logger::info("Configuration saved to: " + file_path);

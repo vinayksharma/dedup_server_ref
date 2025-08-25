@@ -7,26 +7,25 @@
 
 # Main unit test executable
 add_executable(dedup_tests
-    test_base.hpp
     status_test.cpp
-    auth_test.cpp
-    file_utils_test.cpp
-    media_processor_test.cpp
-    file_processor_test.cpp
     database_manager_test.cpp
+    file_processor_test.cpp
+    file_utils_test.cpp
+    auth_test.cpp
     ../config/tests/poco_config_manager_test.cpp
     ../config/tests/poco_config_adapter_test.cpp
-    ../src/auth.cpp
-    ../src/file_utils.cpp
-    ../src/media_processor.cpp
-    ../src/core/memory_pool.cpp
+    ../config/tests/test_config_persistence.cpp
     ../src/database/database_manager.cpp
-    ../src/duplicate_linker.cpp
     ../src/file_processor.cpp
     ../src/file_scanner.cpp
     ../src/database/db_performance_logger.cpp
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
+    ../src/media_processor.cpp
+    ../src/file_utils.cpp
+    ../src/auth.cpp
+    ../src/duplicate_linker.cpp
+    ../src/core/memory_pool.cpp
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
 )

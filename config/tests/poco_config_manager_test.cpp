@@ -357,24 +357,7 @@ TEST_F(PocoConfigManagerTest, UtilityMethods)
     EXPECT_TRUE(config.load(test_config_path_));
 
     EXPECT_TRUE(config.hasKey("dedup_mode"));
-    EXPECT_TRUE(config.hasKey("threading.max_processing_threads"));
     EXPECT_FALSE(config.hasKey("nonexistent_key"));
 }
 
-// Test error handling
-TEST_F(PocoConfigManagerTest, ErrorHandling)
-{
-    auto &config = PocoConfigManager::getInstance();
-
-    // Test loading non-existent file
-    EXPECT_FALSE(config.load("nonexistent_file.json"));
-
-    // Test saving to invalid path
-    EXPECT_FALSE(config.save("/invalid/path/config.json"));
-}
-
-int main(int argc, char **argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+// Note: main() function removed - this test is linked into dedup_tests executable

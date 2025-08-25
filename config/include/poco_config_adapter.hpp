@@ -97,6 +97,36 @@ public:
     void setLogLevel(const std::string &level);
     void setServerPort(int port);
     void setAuthSecret(const std::string &secret);
+    void setServerHost(const std::string &host);
+    void setScanIntervalSeconds(int seconds);
+    void setProcessingIntervalSeconds(int seconds);
+    void setMaxProcessingThreads(int threads);
+    void setMaxScanThreads(int threads);
+    void setHttpServerThreads(const std::string &threads);
+    void setDatabaseThreads(int threads);
+    void setMaxDecoderThreads(int threads);
+    void setProcessingBatchSize(int batch_size);
+    void setPreProcessQualityStack(bool enabled);
+    void setDecoderCacheSizeMB(uint32_t size_mb);
+    void setDatabaseMaxRetries(int max_retries);
+    void setDatabaseBackoffBaseMs(int backoff_ms);
+    void setDatabaseMaxBackoffMs(int max_backoff_ms);
+    void setDatabaseBusyTimeoutMs(int timeout_ms);
+    void setDatabaseOperationTimeoutMs(int timeout_ms);
+
+    // File type configuration methods
+    void setFileTypeEnabled(const std::string &category, const std::string &extension, bool enabled);
+    void setTranscodingFileType(const std::string &extension, bool enabled);
+    void updateFileTypeConfig(const std::string &category, const std::string &extension, bool enabled);
+
+    // Video processing configuration methods
+    void setVideoSkipDurationSeconds(int seconds);
+    void setVideoFramesPerSkip(int frames);
+    void setVideoSkipCount(int count);
+
+    // Remove bulk update method - keeping only specific setters
+    // void updateConfigAndPersist(const nlohmann::json &config_updates, const std::vector<std::string> &changed_keys = {});
+
     void updateConfig(const std::string &json_config);
 
     // Processing configuration methods
@@ -132,6 +162,7 @@ private:
     void publishEvent(const ConfigUpdateEvent &event);
     void initializeDefaultConfig();
     std::string generateUpdateId() const;
+    void persistChanges(const std::string &changed_key = "");
 
     // Reference to the underlying Poco configuration manager
     PocoConfigManager &poco_cfg_;

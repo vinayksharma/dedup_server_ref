@@ -265,9 +265,13 @@ TEST_F(PocoConfigAdapterTest, ConfigurationSections)
     // processing_config is now a JSON string, so we can't directly access fields
     // We can verify it's not empty and contains expected content
     EXPECT_FALSE(processing_config.empty());
-    EXPECT_TRUE(processing_config.find("max_processing_threads") != std::string::npos);
-    EXPECT_TRUE(processing_config.find("max_scan_threads") != std::string::npos);
-    EXPECT_TRUE(processing_config.find("batch_size") != std::string::npos);
+    EXPECT_TRUE(processing_config.find("processing_batch_size") != std::string::npos);
+    EXPECT_TRUE(processing_config.find("pre_process_quality_stack") != std::string::npos);
+
+    auto threading_config = config.getThreadingConfig();
+    EXPECT_FALSE(threading_config.empty());
+    EXPECT_TRUE(threading_config.find("max_processing_threads") != std::string::npos);
+    EXPECT_TRUE(threading_config.find("max_scan_threads") != std::string::npos);
 
     auto cache_config = config.getCacheConfig();
     EXPECT_FALSE(cache_config.empty());

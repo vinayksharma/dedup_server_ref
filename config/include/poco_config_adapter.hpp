@@ -92,6 +92,15 @@ public:
     int getVideoFramesPerSkip(DedupMode mode) const;
     int getVideoSkipCount(DedupMode mode) const;
 
+    // Enhanced configuration getters for specific categories
+    std::string getServerConfig() const;
+    std::string getThreadingConfig() const;
+    std::string getDatabaseConfig() const;
+    std::string getFileTypesConfig() const;
+    std::string getVideoConfig() const;
+    std::string getScanningConfig() const;
+    std::string getLoggingConfig() const;
+
     // Configuration setters with event publishing
     void setDedupMode(DedupMode mode);
     void setLogLevel(const std::string &level);
@@ -123,6 +132,15 @@ public:
     void setVideoSkipDurationSeconds(int seconds);
     void setVideoFramesPerSkip(int frames);
     void setVideoSkipCount(int count);
+
+    // Enhanced configuration setters for specific categories
+    void updateServerConfig(const std::string &json_config);
+    void updateThreadingConfig(const std::string &json_config);
+    void updateDatabaseConfig(const std::string &json_config);
+    void updateFileTypesConfig(const std::string &json_config);
+    void updateVideoConfig(const std::string &json_config);
+    void updateScanningConfig(const std::string &json_config);
+    void updateLoggingConfig(const std::string &json_config);
 
     // Remove bulk update method - keeping only specific setters
     // void updateConfigAndPersist(const nlohmann::json &config_updates, const std::vector<std::string> &changed_keys = {});

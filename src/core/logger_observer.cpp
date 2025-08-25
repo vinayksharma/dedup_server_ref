@@ -1,4 +1,5 @@
 #include "core/logger_observer.hpp"
+#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
 
@@ -6,16 +7,23 @@ void LoggerObserver::onConfigUpdate(const ConfigUpdateEvent &event)
 {
     if (hasLogLevelChange(event))
     {
-        // Get the new log level from the configuration manager
-        // We'll need to access the config manager to get the current value
-        // For now, we'll just log that we detected a log level change
-        Logger::info("LoggerObserver: Log level configuration change detected");
+        try
+        {
+            // Get the new log level from the configuration manager
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            std::string new_log_level = config_manager.getLogLevel();
 
-        // TODO: Implement actual log level change logic
-        // This would involve:
-        // 1. Getting the new log level from the config manager
-        // 2. Calling Logger::setLevel() with the new level
-        // 3. Logging the change for audit purposes
+            Logger::info("LoggerObserver: Log level configuration change detected to: " + new_log_level);
+
+            // Apply the new log level
+            Logger::setLevel(new_log_level);
+
+            Logger::info("LoggerObserver: Successfully updated log level to: " + new_log_level);
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("LoggerObserver: Error updating log level: " + std::string(e.what()));
+        }
     }
 }
 

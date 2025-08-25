@@ -93,6 +93,10 @@ set(SOURCES
     src/core/logger_observer.cpp
     src/core/server_config_observer.cpp
     src/core/scan_config_observer.cpp
+    src/core/threading_config_observer.cpp
+    src/core/database_config_observer.cpp
+    src/core/file_type_config_observer.cpp
+    src/core/video_processing_config_observer.cpp
     src/media_processor.cpp
     src/database/database_manager.cpp
     src/file_processor.cpp

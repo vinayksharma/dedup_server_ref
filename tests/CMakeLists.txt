@@ -516,3 +516,46 @@ target_link_libraries(raw_to_jpeg
     PkgConfig::LIBRAW
     PkgConfig::OpenCV
 ) 
+
+# Configuration tests
+add_executable(test_config_persistence 
+    ../config/tests/test_config_persistence.cpp
+    ../config/src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../src/core/logger_observer.cpp
+    ../src/core/server_config_observer.cpp
+    ../src/core/scan_config_observer.cpp
+    ../src/core/threading_config_observer.cpp
+    ../src/core/database_config_observer.cpp
+    ../src/core/file_type_config_observer.cpp
+    ../src/core/video_processing_config_observer.cpp
+)
+target_link_libraries(test_config_persistence 
+    gtest gtest_main pthread
+    spdlog::spdlog
+    nlohmann_json::nlohmann_json
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
+)
+
+add_executable(test_config_endpoints 
+    test_config_endpoints.cpp
+    ../config/src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../src/core/logger_observer.cpp
+    ../src/core/server_config_observer.cpp
+    ../src/core/scan_config_observer.cpp
+    ../src/core/threading_config_observer.cpp
+    ../src/core/database_config_observer.cpp
+    ../src/core/file_type_config_observer.cpp
+    ../src/core/video_processing_config_observer.cpp
+)
+target_link_libraries(test_config_endpoints 
+    gtest gtest_main pthread
+    spdlog::spdlog
+    nlohmann_json::nlohmann_json
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
+) 

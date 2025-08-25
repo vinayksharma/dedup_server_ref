@@ -1,4 +1,5 @@
 #include "poco_config_adapter.hpp"
+#include "core/dedup_modes.hpp"
 #include "logging/logger.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -852,8 +853,18 @@ bool PocoConfigAdapter::validateConfig() const
 // Processing configuration specific methods
 std::string PocoConfigAdapter::getProcessingConfig() const
 {
-    auto json_config = poco_cfg_.getProcessingConfig();
-    return json_config.dump();
+    try
+    {
+        nlohmann::json config = {
+            {"processing_batch_size", poco_cfg_.getProcessingBatchSize()},
+            {"pre_process_quality_stack", poco_cfg_.getPreProcessQualityStack()}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting processing config: " + std::string(e.what()));
+        return "{}";
+    }
 }
 
 bool PocoConfigAdapter::validateProcessingConfig() const
@@ -921,6 +932,124 @@ void PocoConfigAdapter::updateCacheConfig(const std::string &json_config)
     }
 }
 
+// Enhanced configuration getters for specific categories
+std::string PocoConfigAdapter::getServerConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"server_host", poco_cfg_.getServerHost()},
+            {"server_port", poco_cfg_.getServerPort()},
+            {"auth_secret", poco_cfg_.getAuthSecret()}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting server config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getThreadingConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"max_processing_threads", poco_cfg_.getMaxProcessingThreads()},
+            {"max_scan_threads", poco_cfg_.getMaxScanThreads()},
+            {"database_threads", poco_cfg_.getDatabaseThreads()},
+            {"http_server_threads", poco_cfg_.getHttpServerThreads()}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting threading config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getDatabaseConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"retry", {{"max_attempts", poco_cfg_.getDatabaseMaxRetries()}, {"backoff_base_ms", poco_cfg_.getDatabaseBackoffBaseMs()}, {"max_backoff_ms", poco_cfg_.getDatabaseMaxBackoffMs()}}},
+            {"timeout", {{"busy_timeout_ms", poco_cfg_.getDatabaseBusyTimeoutMs()}, {"operation_timeout_ms", poco_cfg_.getDatabaseOperationTimeoutMs()}}}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting database config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getFileTypesConfig() const
+{
+    try
+    {
+        auto supported_types = poco_cfg_.getSupportedFileTypes();
+        auto transcoding_types = poco_cfg_.getTranscodingFileTypes();
+
+        nlohmann::json config = {
+            {"supported_file_types", supported_types},
+            {"transcoding_file_types", transcoding_types}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting file types config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getVideoConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"dedup_mode", DedupModes::getModeName(poco_cfg_.getDedupMode())},
+            {"video_processing", {{"QUALITY", {{"frames_per_skip", poco_cfg_.getVideoFramesPerSkip(DedupMode::QUALITY)}, {"skip_count", poco_cfg_.getVideoSkipCount(DedupMode::QUALITY)}, {"skip_duration_seconds", poco_cfg_.getVideoSkipDurationSeconds(DedupMode::QUALITY)}}}, {"BALANCED", {{"frames_per_skip", poco_cfg_.getVideoFramesPerSkip(DedupMode::BALANCED)}, {"skip_count", poco_cfg_.getVideoSkipCount(DedupMode::BALANCED)}, {"skip_duration_seconds", poco_cfg_.getVideoSkipDurationSeconds(DedupMode::BALANCED)}}}, {"FAST", {{"frames_per_skip", poco_cfg_.getVideoFramesPerSkip(DedupMode::FAST)}, {"skip_count", poco_cfg_.getVideoSkipCount(DedupMode::FAST)}, {"skip_duration_seconds", poco_cfg_.getVideoSkipDurationSeconds(DedupMode::FAST)}}}}}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting video config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getScanningConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"scan_interval_seconds", poco_cfg_.getScanIntervalSeconds()},
+            {"max_scan_threads", poco_cfg_.getMaxScanThreads()}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting scanning config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
+std::string PocoConfigAdapter::getLoggingConfig() const
+{
+    try
+    {
+        nlohmann::json config = {
+            {"log_level", poco_cfg_.getLogLevel()}};
+        return config.dump();
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error getting logging config: " + std::string(e.what()));
+        return "{}";
+    }
+}
+
 // Internal methods
 void PocoConfigAdapter::publishEvent(const ConfigUpdateEvent &event)
 {
@@ -984,4 +1113,234 @@ void PocoConfigAdapter::persistChanges(const std::string &changed_key)
     }
 }
 
-// Configuration setters with event publishing
+// Enhanced configuration setters for specific categories
+void PocoConfigAdapter::updateServerConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("server_host"))
+        {
+            setServerHost(config["server_host"]);
+        }
+        if (config.contains("server_port"))
+        {
+            setServerPort(config["server_port"]);
+        }
+        if (config.contains("auth_secret"))
+        {
+            setAuthSecret(config["auth_secret"]);
+        }
+
+        Logger::info("Server configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating server config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateThreadingConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("max_processing_threads"))
+        {
+            setMaxProcessingThreads(config["max_processing_threads"]);
+        }
+        if (config.contains("max_scan_threads"))
+        {
+            setMaxScanThreads(config["max_scan_threads"]);
+        }
+        if (config.contains("database_threads"))
+        {
+            setDatabaseThreads(config["database_threads"]);
+        }
+        if (config.contains("http_server_threads"))
+        {
+            setHttpServerThreads(config["http_server_threads"]);
+        }
+
+        Logger::info("Threading configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating threading config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateDatabaseConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("retry"))
+        {
+            auto retry = config["retry"];
+            if (retry.contains("max_attempts"))
+            {
+                setDatabaseMaxRetries(retry["max_attempts"]);
+            }
+            if (retry.contains("backoff_base_ms"))
+            {
+                setDatabaseBackoffBaseMs(retry["backoff_base_ms"]);
+            }
+            if (retry.contains("max_backoff_ms"))
+            {
+                setDatabaseMaxBackoffMs(retry["max_backoff_ms"]);
+            }
+        }
+
+        if (config.contains("timeout"))
+        {
+            auto timeout = config["timeout"];
+            if (timeout.contains("busy_timeout_ms"))
+            {
+                setDatabaseBusyTimeoutMs(timeout["busy_timeout_ms"]);
+            }
+            if (timeout.contains("operation_timeout_ms"))
+            {
+                setDatabaseOperationTimeoutMs(timeout["operation_timeout_ms"]);
+            }
+        }
+
+        Logger::info("Database configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating database config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateFileTypesConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("supported_file_types"))
+        {
+            auto supported = config["supported_file_types"];
+            for (const auto &[category, extensions] : supported.items())
+            {
+                if (extensions.is_object())
+                {
+                    for (const auto &[extension, enabled] : extensions.items())
+                    {
+                        setFileTypeEnabled(category, extension, enabled);
+                    }
+                }
+            }
+        }
+
+        if (config.contains("transcoding_file_types"))
+        {
+            auto transcoding = config["transcoding_file_types"];
+            for (const auto &[extension, enabled] : transcoding.items())
+            {
+                setTranscodingFileType(extension, enabled);
+            }
+        }
+
+        Logger::info("File types configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating file types config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateVideoConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("dedup_mode"))
+        {
+            std::string mode_str = config["dedup_mode"];
+            DedupMode mode = DedupModes::fromString(mode_str);
+            setDedupMode(mode);
+        }
+
+        if (config.contains("video_processing"))
+        {
+            auto video_processing = config["video_processing"];
+            for (const auto &[mode_str, settings] : video_processing.items())
+            {
+                DedupMode mode = DedupModes::fromString(mode_str);
+                if (settings.contains("skip_duration_seconds"))
+                {
+                    setVideoSkipDurationSeconds(settings["skip_duration_seconds"]);
+                }
+                if (settings.contains("frames_per_skip"))
+                {
+                    setVideoFramesPerSkip(settings["frames_per_skip"]);
+                }
+                if (settings.contains("skip_count"))
+                {
+                    setVideoSkipCount(settings["skip_count"]);
+                }
+            }
+        }
+
+        Logger::info("Video configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating video config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateScanningConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("scan_interval_seconds"))
+        {
+            setScanIntervalSeconds(config["scan_interval_seconds"]);
+        }
+        if (config.contains("max_scan_threads"))
+        {
+            setMaxScanThreads(config["max_scan_threads"]);
+        }
+
+        Logger::info("Scanning configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating scanning config: " + std::string(e.what()));
+        throw;
+    }
+}
+
+void PocoConfigAdapter::updateLoggingConfig(const std::string &json_config)
+{
+    try
+    {
+        auto config = nlohmann::json::parse(json_config);
+
+        if (config.contains("log_level"))
+        {
+            setLogLevel(config["log_level"]);
+        }
+
+        Logger::info("Logging configuration updated successfully");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("Error updating logging config: " + std::string(e.what()));
+        throw;
+    }
+}

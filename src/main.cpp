@@ -20,6 +20,10 @@
 #include "core/logger_observer.hpp"
 #include "core/server_config_observer.hpp"
 #include "core/scan_config_observer.hpp"
+#include "core/threading_config_observer.hpp"
+#include "core/database_config_observer.hpp"
+#include "core/file_type_config_observer.hpp"
+#include "core/video_processing_config_observer.hpp"
 #include <httplib.h>
 #include <iostream>
 #include <memory>
@@ -102,17 +106,23 @@ int main(int argc, char *argv[])
     // Initialize logger with configured log level
     Logger::init(config_manager.getLogLevel());
 
-    // Create and register logger observer for runtime log level changes
+    // Create and register configuration observers
     auto logger_observer = std::make_unique<LoggerObserver>();
-    config_manager.subscribe(logger_observer.get());
-
-    // Create and register server config observer for server configuration changes
     auto server_config_observer = std::make_unique<ServerConfigObserver>();
-    config_manager.subscribe(server_config_observer.get());
-
-    // Create and register scan config observer for scan configuration changes
     auto scan_config_observer = std::make_unique<ScanConfigObserver>();
+    auto threading_config_observer = std::make_unique<ThreadingConfigObserver>();
+    auto database_config_observer = std::make_unique<DatabaseConfigObserver>();
+    auto file_type_config_observer = std::make_unique<FileTypeConfigObserver>();
+    auto video_processing_config_observer = std::make_unique<VideoProcessingConfigObserver>();
+
+    // Subscribe observers to configuration changes
+    config_manager.subscribe(logger_observer.get());
+    config_manager.subscribe(server_config_observer.get());
     config_manager.subscribe(scan_config_observer.get());
+    config_manager.subscribe(threading_config_observer.get());
+    config_manager.subscribe(database_config_observer.get());
+    config_manager.subscribe(file_type_config_observer.get());
+    config_manager.subscribe(video_processing_config_observer.get());
 
     // Start watching configuration for runtime changes
     config_manager.startWatching("config/config.json", 2);

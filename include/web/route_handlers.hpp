@@ -90,6 +90,87 @@ public:
             if (!AuthMiddleware::verify_auth(req, res, auth)) return;
             handleSaveConfig(req, res); });
 
+        // Enhanced configuration endpoints for specific categories
+        svr.Get("/config/server", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetServerConfig(req, res); });
+
+        svr.Put("/config/server", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateServerConfig(req, res); });
+
+        svr.Get("/config/threading", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetThreadingConfig(req, res); });
+
+        svr.Put("/config/threading", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateThreadingConfig(req, res); });
+
+        svr.Get("/config/database", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetDatabaseConfig(req, res); });
+
+        svr.Put("/config/database", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateDatabaseConfig(req, res); });
+
+        svr.Get("/config/filetypes", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetFileTypesConfig(req, res); });
+
+        svr.Put("/config/filetypes", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateFileTypesConfig(req, res); });
+
+        svr.Get("/config/video", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetVideoConfig(req, res); });
+
+        svr.Put("/config/video", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateVideoConfig(req, res); });
+
+        svr.Get("/config/scanning", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetScanningConfig(req, res); });
+
+        svr.Put("/config/scanning", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateScanningConfig(req, res); });
+
+        svr.Get("/config/logging", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetLoggingConfig(req, res); });
+
+        svr.Put("/config/logging", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateLoggingConfig(req, res); });
+
+        svr.Get("/config/processing", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleGetProcessingConfig(req, res); });
+
+        svr.Put("/config/processing", [&](const httplib::Request &req, httplib::Response &res)
+                {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            handleUpdateProcessingConfig(req, res); });
+
         // File processing endpoints
         svr.Post("/process/directory", [&](const httplib::Request &req, httplib::Response &res)
                  {
@@ -162,15 +243,7 @@ public:
             handleResizeThreadPool(req, res); });
 
         // Processing configuration endpoints
-        svr.Get("/api/processing/config", [&](const httplib::Request &req, httplib::Response &res)
-                {
-            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
-            handleGetProcessingConfig(req, res); });
-
-        svr.Post("/api/processing/config", [&](const httplib::Request &req, httplib::Response &res)
-                 {
-            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
-            handleUpdateProcessingConfig(req, res); });
+        // These are now handled by the enhanced config endpoints
 
         // Cache management endpoints
         svr.Get("/api/cache/status", [&](const httplib::Request &req, httplib::Response &res)
@@ -433,6 +506,335 @@ private:
         catch (const std::exception &e)
         {
             Logger::error("Save config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    // Enhanced configuration handlers
+    static void handleGetServerConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get server config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string server_config_json = config.getServerConfig();
+            auto server_config_obj = nlohmann::json::parse(server_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", server_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Server configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get server config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateServerConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update server config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateServerConfig(body.dump());
+            res.set_content(json{{"message", "Server configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Server configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update server config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetThreadingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get threading config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string threading_config_json = config.getThreadingConfig();
+            auto threading_config_obj = nlohmann::json::parse(threading_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", threading_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Threading configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get threading config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateThreadingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update threading config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateThreadingConfig(body.dump());
+            res.set_content(json{{"message", "Threading configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Threading configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update threading config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetDatabaseConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get database config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string database_config_json = config.getDatabaseConfig();
+            auto database_config_obj = nlohmann::json::parse(database_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", database_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Database configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get database config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateDatabaseConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update database config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateDatabaseConfig(body.dump());
+            res.set_content(json{{"message", "Database configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Database configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update database config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetFileTypesConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get file types config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string filetypes_config_json = config.getFileTypesConfig();
+            auto filetypes_config_obj = nlohmann::json::parse(filetypes_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", filetypes_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("File types configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get file types config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateFileTypesConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update file types config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateFileTypesConfig(body.dump());
+            res.set_content(json{{"message", "File types configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("File types configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update file types config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetVideoConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get video config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string video_config_json = config.getVideoConfig();
+            auto video_config_obj = nlohmann::json::parse(video_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", video_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Video configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get video config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateVideoConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update video config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateVideoConfig(body.dump());
+            res.set_content(json{{"message", "Video configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Video configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update video config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetScanningConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get scanning config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string scanning_config_json = config.getScanningConfig();
+            auto scanning_config_obj = nlohmann::json::parse(scanning_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", scanning_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Scanning configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get scanning config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateScanningConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update scanning config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateScanningConfig(body.dump());
+            res.set_content(json{{"message", "Scanning configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Scanning configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update scanning config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetLoggingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get logging config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string logging_config_json = config.getLoggingConfig();
+            auto logging_config_obj = nlohmann::json::parse(logging_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", logging_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Logging configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get logging config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateLoggingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update logging config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateLoggingConfig(body.dump());
+            res.set_content(json{{"message", "Logging configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Logging configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update logging config error: " + std::string(e.what()));
+            res.status = 400;
+            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
+        }
+    }
+
+    static void handleGetProcessingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received get processing config request");
+        try
+        {
+            auto &config = PocoConfigAdapter::getInstance();
+            std::string processing_config_json = config.getProcessingConfig();
+            auto processing_config_obj = nlohmann::json::parse(processing_config_json);
+            nlohmann::json response = {
+                {"status", "success"},
+                {"config", processing_config_obj}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Processing configuration retrieved successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Get processing config error: " + std::string(e.what()));
+            res.status = 500;
+            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
+        }
+    }
+
+    static void handleUpdateProcessingConfig(const httplib::Request &req, httplib::Response &res)
+    {
+        Logger::trace("Received update processing config request");
+        try
+        {
+            auto body = nlohmann::json::parse(req.body);
+            auto &config = PocoConfigAdapter::getInstance();
+            config.updateProcessingConfig(body.dump());
+            res.set_content(json{{"message", "Processing configuration updated successfully"}}.dump(), "application/json");
+            Logger::info("Processing configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("Update processing config error: " + std::string(e.what()));
             res.status = 400;
             res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
         }
@@ -1063,57 +1465,7 @@ private:
     }
 
     // Processing configuration handlers
-    static void handleGetProcessingConfig(const httplib::Request &req, httplib::Response &res)
-    {
-        Logger::trace("Received get processing config request");
-        try
-        {
-            auto &config = PocoConfigAdapter::getInstance();
-            std::string config_json = config.getProcessingConfig();
-
-            // Parse the JSON string to create a proper JSON response
-            auto config_obj = nlohmann::json::parse(config_json);
-            nlohmann::json response = {
-                {"status", "success"},
-                {"config", config_obj}};
-
-            res.set_content(response.dump(), "application/json");
-            Logger::info("Processing configuration retrieved successfully");
-        }
-        catch (const std::exception &e)
-        {
-            Logger::error("Get processing config error: " + std::string(e.what()));
-            res.status = 500;
-            res.set_content(json{{"error", "Internal server error"}}.dump(), "application/json");
-        }
-    }
-
-    static void handleUpdateProcessingConfig(const httplib::Request &req, httplib::Response &res)
-    {
-        Logger::trace("Received update processing config request");
-        try
-        {
-            auto body = nlohmann::json::parse(req.body);
-            auto &config_manager = PocoConfigAdapter::getInstance();
-            // Validate the configuration
-            if (!config_manager.validateProcessingConfig())
-            {
-                res.status = 400;
-                res.set_content(json{{"error", "Invalid configuration"}}.dump(), "application/json");
-                return;
-            }
-            // Update configuration (this will trigger reactive events)
-            config_manager.updateProcessingConfig(body.dump());
-            res.set_content(json{{"message", "Processing configuration updated successfully"}}.dump(), "application/json");
-            Logger::info("Processing configuration updated successfully");
-        }
-        catch (const std::exception &e)
-        {
-            Logger::error("Update processing config error: " + std::string(e.what()));
-            res.status = 400;
-            res.set_content(json{{"error", "Invalid request: " + std::string(e.what())}}.dump(), "application/json");
-        }
-    }
+    // These are now handled by the enhanced config endpoints
 
     // Cache management handlers
     static void handleGetCacheStatus(const httplib::Request &req, httplib::Response &res)

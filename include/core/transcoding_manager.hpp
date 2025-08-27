@@ -10,6 +10,7 @@
 #include <memory>
 #include "database/database_manager.hpp"
 #include "logging/logger.hpp"
+#include "config_observer.hpp"
 #include <filesystem>
 
 /**
@@ -19,7 +20,7 @@
  * that can be processed by the media processor. It uses independent threads
  * to avoid blocking the main scanning and processing threads.
  */
-class TranscodingManager
+class TranscodingManager : public ConfigObserver
 {
 public:
     /**
@@ -355,6 +356,12 @@ public:
      */
     void setDatabaseManager(DatabaseManager *db_manager);
 
+    /**
+     * @brief Handle configuration updates (ConfigObserver interface)
+     * @param event Configuration update event
+     */
+    void onConfigUpdate(const ConfigUpdateEvent &event) override;
+
 private:
     TranscodingManager() = default;
     ~TranscodingManager() = default;
@@ -379,4 +386,10 @@ private:
      * @return Unique cache filename
      */
     std::string generateCacheFilename(const std::string &source_file_path);
+
+    /**
+     * @brief Safely adjust cache size based on configuration changes
+     * @param new_size_mb New cache size in MB
+     */
+    void adjustCacheSizeSafely(size_t new_size_mb);
 };

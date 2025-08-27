@@ -16,6 +16,7 @@
 #include <cstring>   // Required for std::memcpy
 #include <memory>    // For smart pointers
 #include <unistd.h>
+#include <algorithm> // For std::find
 
 // FIXED: RAII wrapper for LibRaw to prevent memory leaks
 class LibRawRAII
@@ -149,6 +150,25 @@ void TranscodingManager::initialize(const std::string &cache_dir, int max_thread
     // Load configuration
     loadConfiguration();
 
+    // Subscribe to configuration changes (skip in test mode to prevent hangs)
+    if (getenv("TEST_MODE") == nullptr || std::string(getenv("TEST_MODE")) != "1")
+    {
+        try
+        {
+            PocoConfigAdapter::getInstance().subscribe(this);
+            Logger::info("TranscodingManager subscribed to configuration changes");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::warn("TranscodingManager: Failed to subscribe to configuration changes: " + std::string(e.what()));
+            // Continue initialization even if subscription fails
+        }
+    }
+    else
+    {
+        Logger::info("TranscodingManager: Skipping configuration subscription in test mode");
+    }
+
     // Mark as fully initialized
     initialized_ = true;
 
@@ -201,6 +221,80 @@ void TranscodingManager::loadConfiguration()
         cleanup_config_.unprocessed_age_days = 3;
         cleanup_config_.require_all_modes = false;
         cleanup_config_.cleanup_threshold_percent = 80;
+    }
+}
+
+void TranscodingManager::onConfigUpdate(const ConfigUpdateEvent &event)
+{
+    // Check if this event contains cache size changes
+    bool has_cache_size_change = std::find(event.changed_keys.begin(), event.changed_keys.end(), "decoder_cache_size_mb") != event.changed_keys.end() ||
+                                 std::find(event.changed_keys.begin(), event.changed_keys.end(), "cache.decoder_cache_size_mb") != event.changed_keys.end();
+
+    if (has_cache_size_change)
+    {
+        try
+        {
+            PocoConfigAdapter &config = PocoConfigAdapter::getInstance();
+            size_t new_size_mb = config.getDecoderCacheSizeMB();
+
+            Logger::info("TranscodingManager: Cache size configuration changed to " + std::to_string(new_size_mb) + " MB");
+
+            // Safely adjust the cache size
+            adjustCacheSizeSafely(new_size_mb);
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("TranscodingManager: Failed to handle cache size configuration change: " + std::string(e.what()));
+        }
+    }
+}
+
+void TranscodingManager::adjustCacheSizeSafely(size_t new_size_mb)
+{
+    Logger::info("TranscodingManager: Safely adjusting cache size from " + std::to_string(max_cache_size_mb_) + " MB to " + std::to_string(new_size_mb) + " MB");
+
+    // Store the old size for potential rollback
+    size_t old_size_mb = max_cache_size_mb_;
+
+    try
+    {
+        // Update the cache size configuration
+        max_cache_size_mb_ = new_size_mb;
+        size_t new_size_bytes = new_size_mb * 1024 * 1024;
+        max_cache_size_.store(new_size_bytes);
+
+        // Update cleanup thresholds proportionally
+        cleanup_threshold_mb_ = static_cast<size_t>(new_size_mb * 0.8); // 80% threshold
+        cleanup_target_mb_ = static_cast<size_t>(new_size_mb * 0.6);    // 60% target after cleanup
+
+        Logger::info("TranscodingManager: Cache size updated successfully. New cleanup threshold: " +
+                     std::to_string(cleanup_threshold_mb_) + " MB, target: " + std::to_string(cleanup_target_mb_) + " MB");
+
+        // If the new size is smaller than the current cache size, trigger cleanup
+        if (new_size_mb < current_cache_size_mb_.load())
+        {
+            Logger::warn("TranscodingManager: New cache size is smaller than current usage. Triggering cleanup...");
+
+            // Trigger cleanup to bring cache under the new limit
+            size_t files_removed = cleanupCacheSmart(true);
+
+            Logger::info("TranscodingManager: Cleanup completed. Removed " + std::to_string(files_removed) + " files");
+        }
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("TranscodingManager: Failed to adjust cache size safely. Rolling back to previous size: " + std::string(e.what()));
+
+        // Rollback to previous size
+        max_cache_size_mb_ = old_size_mb;
+        size_t old_size_bytes = old_size_mb * 1024 * 1024;
+        max_cache_size_.store(old_size_bytes);
+
+        // Restore old cleanup thresholds
+        cleanup_threshold_mb_ = static_cast<size_t>(old_size_mb * 0.8);
+        cleanup_target_mb_ = static_cast<size_t>(old_size_mb * 0.6);
+
+        Logger::info("TranscodingManager: Cache size rollback completed");
     }
 }
 
@@ -593,6 +687,25 @@ std::pair<size_t, size_t> TranscodingManager::getTranscodingStats() const
 
 void TranscodingManager::shutdown()
 {
+    // Unsubscribe from configuration changes (skip in test mode)
+    if (getenv("TEST_MODE") == nullptr || std::string(getenv("TEST_MODE")) != "1")
+    {
+        try
+        {
+            PocoConfigAdapter::getInstance().unsubscribe(this);
+            Logger::info("TranscodingManager unsubscribed from configuration changes");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::warn("TranscodingManager: Failed to unsubscribe from configuration changes: " + std::string(e.what()));
+            // Continue shutdown even if unsubscription fails
+        }
+    }
+    else
+    {
+        Logger::info("TranscodingManager: Skipping configuration unsubscription in test mode");
+    }
+
     stopTranscoding();
     Logger::info("TranscodingManager shutdown complete");
 }

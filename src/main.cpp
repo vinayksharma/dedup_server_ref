@@ -24,6 +24,9 @@
 #include "core/database_config_observer.hpp"
 #include "core/file_type_config_observer.hpp"
 #include "core/video_processing_config_observer.hpp"
+#include "core/cache_config_observer.hpp"
+#include "core/processing_config_observer.hpp"
+#include "core/dedup_mode_config_observer.hpp"
 #include <httplib.h>
 #include <iostream>
 #include <memory>
@@ -114,6 +117,9 @@ int main(int argc, char *argv[])
     auto database_config_observer = std::make_unique<DatabaseConfigObserver>();
     auto file_type_config_observer = std::make_unique<FileTypeConfigObserver>();
     auto video_processing_config_observer = std::make_unique<VideoProcessingConfigObserver>();
+    auto cache_config_observer = std::make_unique<CacheConfigObserver>();
+    auto processing_config_observer = std::make_unique<ProcessingConfigObserver>();
+    auto dedup_mode_config_observer = std::make_unique<DedupModeConfigObserver>();
 
     // Subscribe observers to configuration changes
     config_manager.subscribe(logger_observer.get());
@@ -123,6 +129,9 @@ int main(int argc, char *argv[])
     config_manager.subscribe(database_config_observer.get());
     config_manager.subscribe(file_type_config_observer.get());
     config_manager.subscribe(video_processing_config_observer.get());
+    config_manager.subscribe(cache_config_observer.get());
+    config_manager.subscribe(processing_config_observer.get());
+    config_manager.subscribe(dedup_mode_config_observer.get());
 
     // Start watching configuration for runtime changes
     config_manager.startWatching("config/config.json", 2);

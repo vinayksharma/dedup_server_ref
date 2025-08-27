@@ -191,12 +191,52 @@ DatabaseManager::DatabaseManager(const std::string &db_path)
         return;
     }
     initialize();
+
+    // Subscribe to configuration changes (skip in test mode to prevent hangs)
+    if (getenv("TEST_MODE") == nullptr || std::string(getenv("TEST_MODE")) != "1")
+    {
+        try
+        {
+            PocoConfigAdapter::getInstance().subscribe(this);
+            Logger::info("DatabaseManager subscribed to configuration changes");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::warn("DatabaseManager: Failed to subscribe to configuration changes: " + std::string(e.what()));
+            // Continue initialization even if subscription fails
+        }
+    }
+    else
+    {
+        Logger::info("DatabaseManager: Skipping configuration subscription in test mode");
+    }
+
     Logger::info("DatabaseManager initialization completed");
 }
 
 DatabaseManager::~DatabaseManager()
 {
     Logger::info("DatabaseManager destructor called");
+
+    // Unsubscribe from configuration changes (skip in test mode)
+    if (getenv("TEST_MODE") == nullptr || std::string(getenv("TEST_MODE")) != "1")
+    {
+        try
+        {
+            PocoConfigAdapter::getInstance().unsubscribe(this);
+            Logger::info("DatabaseManager unsubscribed from configuration changes");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::warn("DatabaseManager: Failed to unsubscribe from configuration changes: " + std::string(e.what()));
+            // Continue shutdown even if unsubscription fails
+        }
+    }
+    else
+    {
+        Logger::info("DatabaseManager: Skipping configuration unsubscription in test mode");
+    }
+
     {
         // Close database inline
         auto close_future = enqueueReadInline([](DatabaseManager &dbMan)
@@ -244,6 +284,45 @@ void DatabaseManager::initialize()
     if (!createScannedFilesChangeTriggers())
         Logger::error("Failed to create scanned_files change triggers");
     Logger::info("Database tables initialization completed");
+}
+
+void DatabaseManager::onConfigUpdate(const ConfigUpdateEvent &event)
+{
+    // Check if this event contains database-related configuration changes
+    bool has_database_timeout_change = std::find(event.changed_keys.begin(), event.changed_keys.end(), "database_busy_timeout_ms") != event.changed_keys.end();
+    bool has_database_retry_change = std::find(event.changed_keys.begin(), event.changed_keys.end(), "database_retry_count") != event.changed_keys.end();
+
+    if (has_database_timeout_change || has_database_retry_change)
+    {
+        try
+        {
+            PocoConfigAdapter &config = PocoConfigAdapter::getInstance();
+
+            if (has_database_timeout_change)
+            {
+                int new_timeout_ms = config.getDatabaseBusyTimeoutMs();
+                Logger::info("DatabaseManager: Database busy timeout changed to " + std::to_string(new_timeout_ms) + " ms");
+
+                // Update the database connection with new timeout
+                if (db_)
+                {
+                    sqlite3_busy_timeout(db_, new_timeout_ms);
+                    Logger::info("DatabaseManager: Database busy timeout updated successfully");
+                }
+            }
+
+            if (has_database_retry_change)
+            {
+                Logger::info("DatabaseManager: Database retry count configuration changed");
+            }
+
+            Logger::info("DatabaseManager: Database configuration updated successfully");
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("DatabaseManager: Failed to handle configuration change: " + std::string(e.what()));
+        }
+    }
 }
 
 bool DatabaseManager::createMediaProcessingResultsTable()

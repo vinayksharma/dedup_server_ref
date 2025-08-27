@@ -4,6 +4,7 @@
 #include <any>
 #include "core/processing_result.hpp"
 #include "core/dedup_modes.hpp"
+#include "config_observer.hpp"
 #include <memory>
 #include <mutex>
 #include <string>
@@ -33,7 +34,7 @@ struct DBOpResult
 /**
  * @brief SQLite database manager for storing media processing results
  */
-class DatabaseManager
+class DatabaseManager : public ConfigObserver
 {
 public:
     static DatabaseManager &getInstance(const std::string &db_path = "");
@@ -326,6 +327,12 @@ public:
      * @return true if database is initialized and connected, false otherwise
      */
     bool isValid();
+
+    /**
+     * @brief Handle configuration updates (ConfigObserver interface)
+     * @param event Configuration update event
+     */
+    void onConfigUpdate(const ConfigUpdateEvent &event) override;
 
     // Dedupe support helpers
     int getFileId(const std::string &file_path);

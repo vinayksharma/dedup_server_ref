@@ -7,6 +7,9 @@
 #include "core/database_config_observer.hpp"
 #include "core/file_type_config_observer.hpp"
 #include "core/video_processing_config_observer.hpp"
+#include "core/cache_config_observer.hpp"
+#include "core/processing_config_observer.hpp"
+#include "core/dedup_mode_config_observer.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <filesystem>
@@ -283,6 +286,9 @@ TEST_F(ConfigEndpointsTest, TestObserverRegistration)
     auto database_config_observer = std::make_unique<DatabaseConfigObserver>();
     auto file_type_config_observer = std::make_unique<FileTypeConfigObserver>();
     auto video_processing_config_observer = std::make_unique<VideoProcessingConfigObserver>();
+    auto cache_config_observer = std::make_unique<CacheConfigObserver>();
+    auto processing_config_observer = std::make_unique<ProcessingConfigObserver>();
+    auto dedup_mode_config_observer = std::make_unique<DedupModeConfigObserver>();
 
     // Subscribe observers
     config.subscribe(logger_observer.get());
@@ -292,6 +298,9 @@ TEST_F(ConfigEndpointsTest, TestObserverRegistration)
     config.subscribe(database_config_observer.get());
     config.subscribe(file_type_config_observer.get());
     config.subscribe(video_processing_config_observer.get());
+    config.subscribe(cache_config_observer.get());
+    config.subscribe(processing_config_observer.get());
+    config.subscribe(dedup_mode_config_observer.get());
 
     // Test that observers are registered by making a configuration change
     // This should trigger the observer notifications
@@ -305,6 +314,9 @@ TEST_F(ConfigEndpointsTest, TestObserverRegistration)
     config.unsubscribe(database_config_observer.get());
     config.unsubscribe(file_type_config_observer.get());
     config.unsubscribe(video_processing_config_observer.get());
+    config.unsubscribe(cache_config_observer.get());
+    config.unsubscribe(processing_config_observer.get());
+    config.unsubscribe(dedup_mode_config_observer.get());
 
     // Verify unsubscription by checking no errors occur
     SUCCEED();

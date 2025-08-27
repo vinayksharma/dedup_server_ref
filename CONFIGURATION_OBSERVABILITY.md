@@ -174,6 +174,29 @@ tail -f dedup_server.log | grep -E "(SimpleScheduler|Configuration|processing_in
 3. **Audit Log**: Comprehensive logging of all configuration operations
 4. **Health Checks**: Verify configuration validity in health endpoints
 
+## New Observers Added
+
+### CacheConfigObserver
+
+- **Purpose**: Handles cache configuration changes
+- **Configuration Keys**: `decoder_cache_size_mb`, `cache.decoder_cache_size_mb`
+- **Actions**: Logs changes, provides cache management guidance
+- **Future**: Will integrate with decoder cache manager for automatic cache size adjustment
+
+### ProcessingConfigObserver
+
+- **Purpose**: Handles processing configuration changes
+- **Configuration Keys**: `processing_batch_size`, `processing.batch_size`, `pre_process_quality_stack`
+- **Actions**: Logs changes, provides processing pipeline guidance
+- **Future**: Will integrate with media processing orchestrator for automatic batch size adjustment
+
+### DedupModeConfigObserver
+
+- **Purpose**: Handles dedup mode configuration changes
+- **Configuration Keys**: `dedup_mode`
+- **Actions**: Logs changes, provides deduplication algorithm guidance
+- **Future**: Will integrate with duplicate linker and transcoding manager for automatic parameter adjustment
+
 ## Conclusion
 
 The implementation provides robust, real-time configuration observability for the `processing_interval_seconds` setting. The observer pattern ensures that all system components are immediately aware of configuration changes, while the API endpoints provide easy access for monitoring and modification. The system is designed to be reliable, observable, and flexible for operational needs.

@@ -550,8 +550,28 @@ add_executable(test_config_endpoints
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
     ../src/core/video_processing_config_observer.cpp
+    ../src/cache_config_observer.cpp
+    ../src/processing_config_observer.cpp
+    ../src/dedup_mode_config_observer.cpp
 )
 target_link_libraries(test_config_endpoints 
+    gtest gtest_main pthread
+    spdlog::spdlog
+    nlohmann_json::nlohmann_json
+    Poco::Util
+    Poco::JSON
+    Poco::Foundation
+)
+
+add_executable(test_new_config_observers 
+    test_new_config_observers.cpp
+    ../config/src/poco_config_manager.cpp
+    ../config/src/poco_config_adapter.cpp
+    ../src/cache_config_observer.cpp
+    ../src/processing_config_observer.cpp
+    ../src/dedup_mode_config_observer.cpp
+)
+target_link_libraries(test_new_config_observers 
     gtest gtest_main pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json

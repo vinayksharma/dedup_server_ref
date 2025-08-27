@@ -497,6 +497,24 @@ All configuration changes automatically trigger observers that react to specific
 - Reacts to video processing quality and mode changes
 - Logs changes (requires TranscodingManager restart for full effect)
 
+### CacheConfigObserver
+
+- Reacts to `decoder_cache_size_mb` changes
+- Logs changes and provides cache management guidance
+- Automatically adjusts cache size limits
+
+### ProcessingConfigObserver
+
+- Reacts to `processing_batch_size` and `pre_process_quality_stack` changes
+- Logs changes and provides processing pipeline guidance
+- Automatically adjusts batch processing configuration
+
+### DedupModeConfigObserver
+
+- Reacts to `dedup_mode` changes
+- Logs changes and provides deduplication algorithm guidance
+- Automatically adjusts deduplication parameters
+
 ## Configuration Persistence
 
 All configuration changes are automatically persisted to `config.json` in the project's config directory. The configuration is also watched for file changes, allowing runtime updates from external file modifications.

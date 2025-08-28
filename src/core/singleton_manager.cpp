@@ -1,34 +1,41 @@
 #include "core/singleton_manager.hpp"
 #include "logging/logger.hpp"
-#include <iostream>
-#include <fstream>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <memory>
-#include <atomic>
+#include <fstream>
+#include <iostream>
 
-// FIXED: Using smart pointer instead of raw pointer
-static std::unique_ptr<SingletonManager> instance;
-
-// Static member definitions
-std::string SingletonManager::pid_file_path = "";
+// Static member variables
+std::string SingletonManager::pid_file_path;
 std::ofstream SingletonManager::pid_file;
 bool SingletonManager::is_running = false;
 
+SingletonManager::SingletonManager()
+{
+    Logger::info("SingletonManager constructor called");
+}
+
+SingletonManager::~SingletonManager()
+{
+    removePidFile();
+    Logger::info("SingletonManager destructor called");
+}
+
 SingletonManager &SingletonManager::getInstance()
 {
+    static std::unique_ptr<SingletonManager> instance;
     if (!instance)
     {
-        instance = std::make_unique<SingletonManager>(); // FIXED: Using smart pointer
+        instance = std::make_unique<SingletonManager>();
     }
     return *instance;
 }
 
-void SingletonManager::initialize(const std::string &path)
+void SingletonManager::initialize(const std::string &pid_file_path_param)
 {
-    pid_file_path = path;
+    pid_file_path = pid_file_path_param;
+    Logger::info("SingletonManager initialized with PID file: " + pid_file_path);
 }
 
 bool SingletonManager::isAnotherInstanceRunning()
@@ -45,28 +52,32 @@ bool SingletonManager::isAnotherInstanceRunning()
         return false;
     }
 
-    // Read PID and validate process
-    pid_t existing_pid = -1;
-    file >> existing_pid;
+    // Read PID from file
+    pid_t pid;
+    file >> pid;
     file.close();
 
-    if (existing_pid <= 0)
+    if (pid <= 0)
     {
-        // Invalid PID in file, treat as stale and remove
-        Logger::info("Invalid PID in file, removing stale PID file...");
+        // Invalid PID, remove the file
         unlink(pid_file_path.c_str());
         return false;
     }
 
-    // If process is not running, remove stale PID file and allow startup
-    if (kill(existing_pid, 0) != 0)
+    // Check if process is actually running
+    if (kill(pid, 0) != 0)
     {
-        Logger::info("Process " + std::to_string(existing_pid) + " is not running, removing stale PID file...");
+        // Process is not running, remove stale PID file
         unlink(pid_file_path.c_str());
         return false;
     }
 
-    // Another instance is truly running
+    // Check if it's our own PID (shouldn't happen, but just in case)
+    if (pid == getpid())
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -210,11 +221,37 @@ pid_t SingletonManager::getPidFromFile()
     return pid;
 }
 
+void SingletonManager::signalHandler(int signal)
+{
+    Logger::info("Received signal " + std::to_string(signal) + ", shutting down gracefully...");
+
+    // CRITICAL: Clean up PID file immediately to prevent stale PID issues
+    try
+    {
+        Logger::info("Cleaning up PID file due to signal " + std::to_string(signal));
+        SingletonManager::getInstance().removePidFile();
+        Logger::info("PID file cleanup completed");
+    }
+    catch (...)
+    {
+        // Ignore any exceptions during cleanup
+        Logger::warn("Error during PID file cleanup in signal handler");
+    }
+
+    // Flush any pending output
+    std::cout.flush();
+    std::cerr.flush();
+
+    // Exit cleanly - this ensures PID file is removed even if main() cleanup doesn't run
+    Logger::info("Signal handler cleanup complete, exiting...");
+    _exit(0);
+}
+
 void SingletonManager::cleanup()
 {
-    if (instance)
+    // Clean up PID file if still running
+    if (is_running)
     {
-        instance->removePidFile();
-        instance.reset(); // Reset smart pointer
+        removePidFile();
     }
 }

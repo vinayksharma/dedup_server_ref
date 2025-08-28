@@ -98,6 +98,7 @@ set(SOURCES
     src/core/file_type_config_observer.cpp
     src/core/video_processing_config_observer.cpp
     src/core/scan_thread_pool_manager.cpp
+    src/core/database_connection_pool.cpp
     src/cache_config_observer.cpp
     src/processing_config_observer.cpp
     src/dedup_mode_config_observer.cpp
@@ -136,6 +137,7 @@ set(HEADERS
     include/core/media_processing_orchestrator.hpp
     include/core/thread_pool_manager.hpp
     include/core/scan_thread_pool_manager.hpp
+    include/core/database_connection_pool.hpp
     include/core/transcoding_manager.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp
@@ -200,6 +202,8 @@ enable_testing()
 # All tests are now organized in the tests/ directory
 # See tests/CMakeLists.txt for test configurations
 add_subdirectory(tests)
+
+
 
 
 

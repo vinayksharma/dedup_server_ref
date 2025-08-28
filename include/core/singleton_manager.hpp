@@ -36,9 +36,6 @@ public:
     // Get PID from file
     pid_t getPidFromFile();
 
-    // Graceful shutdown handler
-    static void signalHandler(int signal);
-
     // Initialize singleton with PID file path
     static void initialize(const std::string &pid_file_path);
 

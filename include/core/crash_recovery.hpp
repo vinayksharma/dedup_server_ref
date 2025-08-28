@@ -29,16 +29,21 @@ public:
     // Install signal handlers for common crash signals
     static void installSignalHandlers()
     {
-        // Install handlers for common crash signals
+        // NOTE: Signal handlers are now managed by main.cpp for coordinated shutdown
+        // Only install crash-specific handlers that don't conflict with shutdown signals
+
+        // Install handlers for crash signals only
         signal(SIGSEGV, handleSegfault);
         signal(SIGBUS, handleBusError);
         signal(SIGFPE, handleFloatingPoint);
         signal(SIGILL, handleIllegalInstruction);
         signal(SIGABRT, handleAbort);
-        signal(SIGTERM, handleTermination);
-        signal(SIGINT, handleInterrupt);
 
-        Logger::debug("Signal handlers installed for crash recovery");
+        // SIGTERM and SIGINT are handled by main.cpp for coordinated shutdown
+        // signal(SIGTERM, handleTermination);
+        // signal(SIGINT, handleInterrupt);
+
+        Logger::debug("Crash signal handlers installed (shutdown signals managed by main.cpp)");
     }
 
     // Set custom signal handler for specific signal

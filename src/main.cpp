@@ -2,6 +2,7 @@
 #include "core/media_processing_orchestrator.hpp"
 #include "core/thread_pool_manager.hpp"
 #include "core/scan_thread_pool_manager.hpp"
+#include "core/database_connection_pool.hpp"
 #include "core/file_scanner.hpp"
 #include "core/transcoding_manager.hpp"
 #include "web/route_handlers.hpp"
@@ -32,16 +33,67 @@
 #include <iostream>
 #include <memory>
 #include <signal.h>
+#include <atomic>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/mutex.h>
 #include <tbb/task_arena.h>
 
-// Global server pointer for signal handling
+// Global variables for signal handling
 static httplib::Server *g_server = nullptr;
+static std::atomic<bool> g_shutdown_requested{false};
+static std::atomic<bool> g_shutdown_in_progress{false};
+
+// Coordinated signal handler for clean shutdown
+void coordinatedSignalHandler(int signal)
+{
+    if (g_shutdown_in_progress.exchange(true))
+    {
+        // Shutdown already in progress, exit immediately
+        Logger::warn("Shutdown already in progress, exiting immediately");
+        _exit(1);
+    }
+
+    Logger::info("Received signal " + std::to_string(signal) + ", initiating graceful shutdown...");
+    g_shutdown_requested = true;
+
+    // Stop the HTTP server if it's running
+    if (g_server)
+    {
+        Logger::info("Stopping HTTP server...");
+        g_server->stop();
+    }
+
+    // Give a short grace period for cleanup, then force exit
+    std::thread([signal]()
+                {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        Logger::warn("Grace period expired, forcing exit");
+        _exit(1); })
+        .detach();
+}
+
+// Initialize coordinated signal handling
+void initializeSignalHandling()
+{
+    // Remove any existing signal handlers to avoid conflicts
+    signal(SIGINT, SIG_DFL);
+    signal(SIGTERM, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+
+    // Install our coordinated signal handler
+    signal(SIGINT, coordinatedSignalHandler);
+    signal(SIGTERM, coordinatedSignalHandler);
+    signal(SIGQUIT, coordinatedSignalHandler);
+
+    Logger::info("Coordinated signal handling initialized");
+}
 
 int main(int argc, char *argv[])
 {
+    // Initialize coordinated signal handling FIRST
+    initializeSignalHandling();
+
     // Initialize singleton manager with PID file
     SingletonManager::initialize("dedup_server.pid");
     auto &singleton_manager = SingletonManager::getInstance();
@@ -146,6 +198,11 @@ int main(int argc, char *argv[])
     // Initialize thread pool manager with configured thread count
     ThreadPoolManager::initialize(config_manager.getMaxProcessingThreads());
 
+    // Initialize database connection pool with configured database thread count
+    auto &db_connection_pool = DatabaseConnectionPool::getInstance();
+    db_connection_pool.initialize(config_manager.getDatabaseThreads());
+    Logger::info("Database connection pool initialized with " + std::to_string(config_manager.getDatabaseThreads()) + " connections");
+
     // Initialize scan thread pool manager with configured scan thread count
     auto &scan_thread_manager = ScanThreadPoolManager::getInstance();
     scan_thread_manager.initialize(config_manager.getMaxScanThreads());
@@ -202,6 +259,7 @@ int main(int argc, char *argv[])
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             
             // Get all stored scan paths from database
+            auto &db_manager = DatabaseManager::getInstance();
             auto scan_paths = db_manager.getUserInputs("scan_path");
 
             if (scan_paths.empty())
@@ -231,52 +289,52 @@ int main(int argc, char *argv[])
             tbb::parallel_for(tbb::blocked_range<size_t>(0, scan_paths.size()),
                               [&](const tbb::blocked_range<size_t> &range)
                               {
-                                  // Round-robin distribution: each thread processes every Nth path
-                                  // where N is the number of threads
-                                  int max_scan_threads = config_manager.getMaxScanThreads();
+                // Round-robin distribution: each thread processes every Nth path
+                // where N is the number of threads
+                int max_scan_threads = config_manager.getMaxScanThreads();
 
-                                  // Get thread ID for round-robin distribution
-                                  size_t thread_id = tbb::this_task_arena::current_thread_index();
-                                  if (thread_id >= max_scan_threads)
-                                  {
-                                      thread_id = thread_id % max_scan_threads;
-                                  }
+                // Get thread ID for round-robin distribution
+                size_t thread_id = tbb::this_task_arena::current_thread_index();
+                if (thread_id >= max_scan_threads)
+                {
+                    thread_id = thread_id % max_scan_threads;
+                }
 
-                                  // Process paths assigned to this thread in round-robin fashion
-                                  for (size_t i = thread_id; i < scan_paths.size(); i += max_scan_threads)
-                                  {
-                                      const auto &scan_path = scan_paths[i];
+                // Process paths assigned to this thread in round-robin fashion
+                for (size_t i = thread_id; i < scan_paths.size(); i += max_scan_threads)
+                {
+                    const auto &scan_path = scan_paths[i];
 
-                                      try
-                                      {
-                                          Logger::info("Thread " + std::to_string(thread_id) +
-                                                       " scanning directory: " + scan_path);
+                    try
+                    {
+                        Logger::info("Thread " + std::to_string(thread_id) +
+                                     " scanning directory: " + scan_path);
 
-                                          // Create scanner instance for this thread
-                                          FileScanner scanner("scan_results.db");
+                        // Create scanner instance for this thread
+                        FileScanner scanner("scan_results.db");
 
-                                          // Lock database operations to prevent race conditions
-                                          tbb::mutex::scoped_lock lock(db_mutex);
+                        // Lock database operations to prevent race conditions
+                        tbb::mutex::scoped_lock lock(db_mutex);
 
-                                          // Perform the scan
-                                          size_t files_stored = scanner.scanDirectory(scan_path, true);
+                        // Perform the scan
+                        size_t files_stored = scanner.scanDirectory(scan_path, true);
 
-                                          // Update counters
-                                          total_files_stored += files_stored;
-                                          successful_scans++;
+                        // Update counters
+                        total_files_stored += files_stored;
+                        successful_scans++;
 
-                                          Logger::info("Thread " + std::to_string(thread_id) +
-                                                       " completed scan for " + scan_path +
-                                                       " - Files stored: " + std::to_string(files_stored));
-                                      }
-                                      catch (const std::exception &e)
-                                      {
-                                          failed_scans++;
-                                          Logger::error("Thread " + std::to_string(thread_id) +
-                                                        " error scanning directory " + scan_path + ": " + std::string(e.what()));
-                                      }
-                                  }
-                              });
+                        Logger::info("Thread " + std::to_string(thread_id) +
+                                     " completed scan for " + scan_path +
+                                     " - Files stored: " + std::to_string(files_stored));
+                    }
+                    catch (const std::exception &e)
+                    {
+                        failed_scans++;
+                        Logger::error("Thread " + std::to_string(thread_id) +
+                                      " error scanning directory " + scan_path + ": " + std::string(e.what()));
+                    }
+                }
+            });
 
             // Log final statistics for immediate scan
             Logger::info("Immediate startup scan completed - Total files stored: " + std::to_string(total_files_stored.load()) +
@@ -345,123 +403,123 @@ int main(int argc, char *argv[])
     // Set up scan callback - scan all stored directories
     scheduler.setScanCallback([]()
                               {
-            Logger::info("Executing scheduled scan operation");
-            try {
-                // Get all stored scan paths from database
-                auto &db_manager = DatabaseManager::getInstance();
-                auto scan_paths = db_manager.getUserInputs("scan_path");
-                
-                if (scan_paths.empty()) {
-                    Logger::warn("No scan paths configured, using default: /tmp");
-                    scan_paths.push_back("/tmp");
-                }
-                
-                Logger::info("Found " + std::to_string(scan_paths.size()) + " scan paths to process");
-                
-                // Get configured scan thread limit
-                auto &config_manager = PocoConfigAdapter::getInstance();
-                int max_scan_threads = config_manager.getMaxScanThreads();
-                
-                Logger::info("Starting parallel scan with " + std::to_string(max_scan_threads) + " threads for " + 
-                           std::to_string(scan_paths.size()) + " scan paths");
-                
-                // Thread-safe counters for progress tracking
-                std::atomic<size_t> total_files_stored{0};
-                std::atomic<size_t> successful_scans{0};
-                std::atomic<size_t> failed_scans{0};
-                
-                // Thread-safe mutex for database operations to prevent race conditions
-                tbb::mutex db_mutex;
-                
-                // Process scan paths in parallel using TBB with round-robin distribution
-                // This ensures equal prioritization when there are more paths than threads
-                tbb::parallel_for(tbb::blocked_range<size_t>(0, scan_paths.size()),
-                    [&](const tbb::blocked_range<size_t>& range) {
-                        // Round-robin distribution: each thread processes every Nth path
-                        // where N is the number of threads
-                        auto& config_manager = PocoConfigAdapter::getInstance();
-                        int max_scan_threads = config_manager.getMaxScanThreads();
+        Logger::info("Executing scheduled scan operation");
+        try {
+            // Get all stored scan paths from database
+            auto &db_manager = DatabaseManager::getInstance();
+            auto scan_paths = db_manager.getUserInputs("scan_path");
+            
+            if (scan_paths.empty()) {
+                Logger::warn("No scan paths configured, using default: /tmp");
+                scan_paths.push_back("/tmp");
+            }
+            
+            Logger::info("Found " + std::to_string(scan_paths.size()) + " scan paths to process");
+            
+            // Get configured scan thread limit
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            int max_scan_threads = config_manager.getMaxScanThreads();
+            
+            Logger::info("Starting parallel scan with " + std::to_string(max_scan_threads) + " threads for " + 
+                        std::to_string(scan_paths.size()) + " scan paths");
+            
+            // Thread-safe counters for progress tracking
+            std::atomic<size_t> total_files_stored{0};
+            std::atomic<size_t> successful_scans{0};
+            std::atomic<size_t> failed_scans{0};
+            
+            // Thread-safe mutex for database operations to prevent race conditions
+            tbb::mutex db_mutex;
+            
+            // Process scan paths in parallel using TBB with round-robin distribution
+            // This ensures equal prioritization when there are more paths than threads
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, scan_paths.size()),
+                [&](const tbb::blocked_range<size_t>& range) {
+                    // Round-robin distribution: each thread processes every Nth path
+                    // where N is the number of threads
+                    auto& config_manager = PocoConfigAdapter::getInstance();
+                    int max_scan_threads = config_manager.getMaxScanThreads();
+                    
+                    // Get thread ID for round-robin distribution
+                    size_t thread_id = tbb::this_task_arena::current_thread_index();
+                    if (thread_id >= max_scan_threads) {
+                        thread_id = thread_id % max_scan_threads;
+                    }
+                    
+                    // Process paths assigned to this thread in round-robin fashion
+                    for (size_t i = thread_id; i < scan_paths.size(); i += max_scan_threads) {
+                        const auto& scan_path = scan_paths[i];
                         
-                        // Get thread ID for round-robin distribution
-                        size_t thread_id = tbb::this_task_arena::current_thread_index();
-                        if (thread_id >= max_scan_threads) {
-                            thread_id = thread_id % max_scan_threads;
-                        }
-                        
-                        // Process paths assigned to this thread in round-robin fashion
-                        for (size_t i = thread_id; i < scan_paths.size(); i += max_scan_threads) {
-                            const auto& scan_path = scan_paths[i];
+                        try {
+                            Logger::info("Thread " + std::to_string(thread_id) + 
+                                       " scanning directory: " + scan_path);
                             
-                            try {
-                                Logger::info("Thread " + std::to_string(thread_id) + 
-                                           " scanning directory: " + scan_path);
-                                
-                                // Create scanner instance for this thread
-                                FileScanner scanner("scan_results.db");
-                                
-                                // Lock database operations to prevent race conditions
-                                tbb::mutex::scoped_lock lock(db_mutex);
-                                
-                                // Perform the scan
-                                size_t files_stored = scanner.scanDirectory(scan_path, true);
-                                
-                                // Update counters
-                                total_files_stored += files_stored;
-                                successful_scans++;
-                                
-                                Logger::info("Thread " + std::to_string(thread_id) + 
-                                           " completed scan for " + scan_path + 
-                                           " - Files stored: " + std::to_string(files_stored));
+                            // Create scanner instance for this thread
+                            FileScanner scanner("scan_results.db");
+                            
+                            // Lock database operations to prevent race conditions
+                            tbb::mutex::scoped_lock lock(db_mutex);
+                            
+                            // Perform the scan
+                            size_t files_stored = scanner.scanDirectory(scan_path, true);
+                            
+                            // Update counters
+                            total_files_stored += files_stored;
+                            successful_scans++;
+                            
+                            Logger::info("Thread " + std::to_string(thread_id) + 
+                                       " completed scan for " + scan_path + 
+                                       " - Files stored: " + std::to_string(files_stored));
                                            
-                            } catch (const std::exception &e) {
-                                failed_scans++;
-                                Logger::error("Thread " + std::to_string(thread_id) + 
-                                            " error scanning directory " + scan_path + ": " + std::string(e.what()));
-                            }
+                        } catch (const std::exception &e) {
+                            failed_scans++;
+                            Logger::error("Thread " + std::to_string(thread_id) + 
+                                         " error scanning directory " + scan_path + ": " + std::string(e.what()));
                         }
-                    });
-                
-                // Log final statistics
-                Logger::info("Parallel scanning completed - Total files stored: " + std::to_string(total_files_stored.load()) + 
-                           ", Successful scans: " + std::to_string(successful_scans.load()) + 
-                           ", Failed scans: " + std::to_string(failed_scans.load()));
-                
-                Logger::info("All scheduled scans completed - Total files stored: " + std::to_string(total_files_stored.load()));
-            } catch (const std::exception &e) {
-                Logger::error("Error in scheduled scan: " + std::string(e.what()));
-            } });
+                    }
+                });
+            
+            // Log final statistics
+            Logger::info("Parallel scanning completed - Total files stored: " + std::to_string(total_files_stored.load()) + 
+                        ", Successful scans: " + std::to_string(successful_scans.load()) + 
+                        ", Failed scans: " + std::to_string(failed_scans.load()));
+            
+            Logger::info("All scheduled scans completed - Total files stored: " + std::to_string(total_files_stored.load()));
+        } catch (const std::exception &e) {
+            Logger::error("Error in scheduled scan: " + std::string(e.what()));
+        } });
 
     // Set up processing callback - process files that need processing
     scheduler.setProcessingCallback([&db_manager]()
                                     {
-            Logger::info("Executing scheduled processing operation");
-            try {
-                // Process files that need processing using ThreadPoolManager
-                auto &config_manager = PocoConfigAdapter::getInstance();
-                ThreadPoolManager::processAllScannedFilesAsync(
-                    config_manager.getMaxProcessingThreads(),
-                    // on_event callback
-                    [](const FileProcessingEvent &event) {
-                        if (event.success) {
-                            Logger::info("Processed file: " + event.file_path + 
-                                       " (format: " + event.artifact_format + 
-                                       ", confidence: " + std::to_string(event.artifact_confidence) + ")");
-                        } else {
-                            Logger::warn("Failed to process file: " + event.file_path + 
-                                       " - " + event.error_message);
-                        }
-                    },
-                    // on_error callback
-                    [](const std::exception &e) {
-                        Logger::error("Processing error: " + std::string(e.what()));
-                    },
-                    // on_complete callback
-                    []() {
-                        Logger::info("Scheduled processing completed");
-                    });
-            } catch (const std::exception &e) {
-                Logger::error("Error in scheduled processing: " + std::string(e.what()));
-            } });
+        Logger::info("Executing scheduled processing operation");
+        try {
+            // Process files that need processing using ThreadPoolManager
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            ThreadPoolManager::processAllScannedFilesAsync(
+                config_manager.getMaxProcessingThreads(),
+                // on_event callback
+                [](const FileProcessingEvent &event) {
+                    if (event.success) {
+                        Logger::info("Processed file: " + event.file_path + 
+                                   " (format: " + event.artifact_format + 
+                                   ", confidence: " + std::to_string(event.artifact_confidence) + ")");
+                    } else {
+                        Logger::warn("Failed to process file: " + event.file_path + 
+                                   " - " + event.error_message);
+                    }
+                },
+                // on_error callback
+                [](const std::exception &e) {
+                    Logger::error("Processing error: " + std::string(e.what()));
+                },
+                // on_complete callback
+                []() {
+                    Logger::info("Scheduled processing completed");
+                });
+        } catch (const std::exception &e) {
+            Logger::error("Error in scheduled processing: " + std::string(e.what()));
+        } });
 
     Status status;
     Auth auth(config_manager.getAuthSecret()); // Use config from manager
@@ -483,18 +541,40 @@ int main(int argc, char *argv[])
     std::cout << "Server starting on http://" << config_manager.getServerHost() << ":" << config_manager.getServerPort() << std::endl;
     std::cout << "API documentation available at: http://" << config_manager.getServerHost() << ":" << config_manager.getServerPort() << ServerConfig::API_DOCS_PATH << std::endl;
 
-    // Start the server
-    svr.listen(config_manager.getServerHost(), config_manager.getServerPort());
+    // Start the server in a separate thread to allow for graceful shutdown
+    std::thread server_thread([&svr, &config_manager]()
+                              { svr.listen(config_manager.getServerHost(), config_manager.getServerPort()); });
 
-    // Cleanup (this will only be reached if server stops normally)
+    // Wait for shutdown signal
+    while (!g_shutdown_requested)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    Logger::info("Shutdown requested, cleaning up...");
+
+    // Cleanup sequence
     g_server = nullptr; // Clear global pointer
+
+    // Stop all components in reverse order
     scheduler.stop();
+
+    // Shutdown managers
     DatabaseManager::shutdown();
     ThreadPoolManager::shutdown();
+    ScanThreadPoolManager::getInstance().shutdown();
+    DatabaseConnectionPool::getInstance().shutdown();
 
-    // Safety mechanisms shutdown (disabled)
+    // Wait for server thread to finish
+    if (server_thread.joinable())
+    {
+        server_thread.join();
+    }
+
+    // Safety mechanisms shutdown
     Logger::info("Safety mechanisms shutdown complete");
 
+    // Cleanup singleton manager
     SingletonManager::cleanup();
     Logger::info("Server shutdown complete");
     return 0;

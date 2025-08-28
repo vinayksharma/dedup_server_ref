@@ -522,6 +522,7 @@ add_executable(test_config_persistence
     ../config/tests/test_config_persistence.cpp
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
+    ../src/core/memory_pool.cpp
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
@@ -530,12 +531,29 @@ add_executable(test_config_persistence
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
     ../src/core/video_processing_config_observer.cpp
+    ../src/core/database_connection_pool.cpp
+    ../src/database/database_manager.cpp
+    ../src/thread_pool_manager.cpp
+    ../src/media_processor.cpp
+    ../src/transcoding_manager.cpp
+    ../src/media_processing_orchestrator.cpp
+    ../src/file_utils.cpp
+    ../src/duplicate_linker.cpp
+    ../src/mount_manager.cpp
+    ../src/database/db_performance_logger.cpp
 )
 target_link_libraries(test_config_persistence 
     gtest gtest_main pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    PkgConfig::LIBRAW
+    ${FFMPEG_LIBRARIES}
     TBB::tbb
+    yaml-cpp
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -545,6 +563,7 @@ add_executable(test_config_endpoints
     test_config_endpoints.cpp
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
+    ../src/core/memory_pool.cpp
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
@@ -553,6 +572,16 @@ add_executable(test_config_endpoints
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
     ../src/core/video_processing_config_observer.cpp
+    ../src/core/database_connection_pool.cpp
+    ../src/thread_pool_manager.cpp
+    ../src/database/database_manager.cpp
+    ../src/media_processor.cpp
+    ../src/transcoding_manager.cpp
+    ../src/media_processing_orchestrator.cpp
+    ../src/file_utils.cpp
+    ../src/duplicate_linker.cpp
+    ../src/mount_manager.cpp
+    ../src/database/db_performance_logger.cpp
     ../src/cache_config_observer.cpp
     ../src/processing_config_observer.cpp
     ../src/dedup_mode_config_observer.cpp
@@ -561,11 +590,23 @@ target_link_libraries(test_config_endpoints
     gtest gtest_main pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    PkgConfig::SQLITE3
+    PkgConfig::OpenCV
+    PkgConfig::LIBRAW
+    ${FFMPEG_LIBRARIES}
     TBB::tbb
+    yaml-cpp
     Poco::Util
     Poco::JSON
     Poco::Foundation
 )
+
+# Test executable for DatabaseConnectionPool
+add_executable(test_database_connection_pool test_database_connection_pool.cpp ../src/core/database_connection_pool.cpp)
+target_compile_definitions(test_database_connection_pool PRIVATE TEST_MODE)
+target_link_libraries(test_database_connection_pool gtest gtest_main pthread spdlog::spdlog)
 
 add_executable(test_new_config_observers 
     test_new_config_observers.cpp

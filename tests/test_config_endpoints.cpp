@@ -59,7 +59,7 @@ protected:
             "threading": {
                 "max_processing_threads": 8,
                 "max_scan_threads": 4,
-                "http_server_threads": "manual",
+            
                 "database_threads": 2,
                 "max_decoder_threads": 4
             },
@@ -158,7 +158,6 @@ TEST_F(ConfigEndpointsTest, TestThreadingConfigEndpoints)
     EXPECT_TRUE(threading_json.contains("max_processing_threads"));
     EXPECT_TRUE(threading_json.contains("max_scan_threads"));
     EXPECT_TRUE(threading_json.contains("database_threads"));
-    EXPECT_TRUE(threading_json.contains("http_server_threads"));
 
     // Test that the update method doesn't crash and publishes events
     json update_config = {

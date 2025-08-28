@@ -47,7 +47,7 @@ public:
     // Thread configuration getters
     int getMaxProcessingThreads() const;
     int getMaxScanThreads() const;
-    std::string getHttpServerThreads() const;
+
     int getDatabaseThreads() const;
 
     // Processing configuration getters
@@ -111,7 +111,7 @@ public:
     void setProcessingIntervalSeconds(int seconds);
     void setMaxProcessingThreads(int threads);
     void setMaxScanThreads(int threads);
-    void setHttpServerThreads(const std::string &threads);
+
     void setDatabaseThreads(int threads);
     void setMaxDecoderThreads(int threads);
     void setProcessingBatchSize(int batch_size);

@@ -44,7 +44,7 @@ public:
     // Thread configuration getters
     int getMaxProcessingThreads() const;
     int getMaxScanThreads() const;
-    std::string getHttpServerThreads() const;
+
     int getDatabaseThreads() const;
     int getMaxDecoderThreads() const;
 

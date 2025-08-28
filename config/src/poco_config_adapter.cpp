@@ -117,11 +117,6 @@ int PocoConfigAdapter::getMaxScanThreads() const
     return poco_cfg_.getMaxScanThreads();
 }
 
-std::string PocoConfigAdapter::getHttpServerThreads() const
-{
-    return poco_cfg_.getHttpServerThreads();
-}
-
 int PocoConfigAdapter::getDatabaseThreads() const
 {
     return poco_cfg_.getDatabaseThreads();
@@ -388,23 +383,6 @@ void PocoConfigAdapter::setMaxScanThreads(int threads)
     // Publish event
     ConfigUpdateEvent event;
     event.changed_keys = {"max_scan_threads"};
-    event.source = "api";
-    event.update_id = generateUpdateId();
-
-    publishEvent(event);
-}
-
-void PocoConfigAdapter::setHttpServerThreads(const std::string &threads)
-{
-    // Update Poco config
-    poco_cfg_.update({{"http_server_threads", threads}});
-
-    // Persist changes to config.json
-    persistChanges("http_server_threads");
-
-    // Publish event
-    ConfigUpdateEvent event;
-    event.changed_keys = {"http_server_threads"};
     event.source = "api";
     event.update_id = generateUpdateId();
 
@@ -957,8 +935,7 @@ std::string PocoConfigAdapter::getThreadingConfig() const
         nlohmann::json config = {
             {"max_processing_threads", poco_cfg_.getMaxProcessingThreads()},
             {"max_scan_threads", poco_cfg_.getMaxScanThreads()},
-            {"database_threads", poco_cfg_.getDatabaseThreads()},
-            {"http_server_threads", poco_cfg_.getHttpServerThreads()}};
+            {"database_threads", poco_cfg_.getDatabaseThreads()}};
         return config.dump();
     }
     catch (const std::exception &e)
@@ -1159,10 +1136,6 @@ void PocoConfigAdapter::updateThreadingConfig(const std::string &json_config)
         if (config.contains("database_threads"))
         {
             setDatabaseThreads(config["database_threads"]);
-        }
-        if (config.contains("http_server_threads"))
-        {
-            setHttpServerThreads(config["http_server_threads"]);
         }
 
         Logger::info("Threading configuration updated successfully");

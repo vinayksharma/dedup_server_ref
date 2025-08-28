@@ -43,7 +43,7 @@ protected:
             "threading": {
                 "max_processing_threads": 4,
                 "max_scan_threads": 2,
-                "http_server_threads": "manual",
+            
                 "database_threads": 1,
                 "max_decoder_threads": 2
             },

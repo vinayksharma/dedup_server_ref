@@ -22,7 +22,6 @@ void debugConfiguration()
         std::cout << "  Max Processing Threads: " << config.getMaxProcessingThreads() << std::endl;
         std::cout << "  Max Scan Threads: " << config.getMaxScanThreads() << std::endl;
         std::cout << "  Database Threads: " << config.getDatabaseThreads() << std::endl;
-        std::cout << "  HTTP Server Threads: " << config.getHttpServerThreads() << std::endl;
 
         std::cout << "\n3. Processing Configuration:" << std::endl;
         std::cout << "  Processing Batch Size: " << config.getProcessingBatchSize() << std::endl;

@@ -52,7 +52,7 @@
   },
   "threading": {
     "database_threads": 1,
-    "http_server_threads": "manual",
+
     "max_decoder_threads": 2,
     "max_processing_threads": 16,
     "max_scan_threads": 2

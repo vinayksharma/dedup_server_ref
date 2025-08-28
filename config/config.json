@@ -96,7 +96,6 @@
   "server_port": 8080,
   "threading": {
     "database_threads": 2,
-    "http_server_threads": "auto",
     "max_processing_threads": 8,
     "max_scan_threads": 4
   },

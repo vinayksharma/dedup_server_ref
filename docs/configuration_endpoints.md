@@ -143,8 +143,7 @@ Retrieves threading configuration.
   "config": {
     "max_processing_threads": 8,
     "max_scan_threads": 4,
-    "database_threads": 2,
-    "http_server_threads": "auto"
+    "database_threads": 2
   }
 }
 ```

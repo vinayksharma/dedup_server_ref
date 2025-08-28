@@ -49,7 +49,7 @@ protected:
             "threading": {
                 "max_processing_threads": 4,
                 "max_scan_threads": 2,
-                "http_server_threads": "manual",
+            
                 "database_threads": 1,
                 "max_decoder_threads": 2
             },
@@ -124,7 +124,7 @@ TEST_F(PocoConfigAdapterTest, ThreadConfigurationGetters)
 
     EXPECT_EQ(config.getMaxProcessingThreads(), 4);
     EXPECT_EQ(config.getMaxScanThreads(), 2);
-    EXPECT_EQ(config.getHttpServerThreads(), "manual");
+
     EXPECT_EQ(config.getDatabaseThreads(), 1);
     EXPECT_EQ(config.getMaxDecoderThreads(), 2);
 }

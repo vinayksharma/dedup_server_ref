@@ -152,11 +152,6 @@ int PocoConfigManager::getMaxScanThreads() const
     return getInt("threading.max_scan_threads", 4);
 }
 
-std::string PocoConfigManager::getHttpServerThreads() const
-{
-    return getString("threading.http_server_threads", "auto");
-}
-
 int PocoConfigManager::getDatabaseThreads() const
 {
     return getInt("threading.database_threads", 2);
@@ -433,7 +428,7 @@ void PocoConfigManager::initializeDefaultConfig()
     // Threading defaults
     cfg_->setInt("threading.max_processing_threads", 8);
     cfg_->setInt("threading.max_scan_threads", 4);
-    cfg_->setString("threading.http_server_threads", "auto");
+
     cfg_->setInt("threading.database_threads", 2);
     cfg_->setInt("threading.max_decoder_threads", 4);
 

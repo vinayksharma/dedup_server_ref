@@ -93,7 +93,7 @@
   },
   "scan_interval_seconds": 300,
   "server_host": "localhost",
-  "server_port": 8080,
+  "server_port": 8081,
   "threading": {
     "database_threads": 2,
     "max_processing_threads": 8,

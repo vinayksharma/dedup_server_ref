@@ -195,4 +195,7 @@ private:
     std::string watched_file_path_;
     int watch_interval_seconds_{2};
     std::filesystem::file_time_type last_write_time_{};
+
+    // Configuration file path tracking
+    std::string config_file_path_;
 };

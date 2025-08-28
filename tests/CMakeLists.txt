@@ -26,6 +26,7 @@ set(DEDUP_TESTS_SOURCES
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
     ../src/core/server_config_observer.cpp
+    stubs/http_server_manager_stub.cpp
     ../src/media_processor.cpp
     ../src/file_utils.cpp
     ../src/auth.cpp
@@ -522,6 +523,8 @@ add_executable(test_config_persistence
     ../config/tests/test_config_persistence.cpp
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
+    ../src/simple_scheduler.cpp
+    stubs/http_server_manager_stub.cpp
     ../src/core/memory_pool.cpp
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
@@ -563,6 +566,8 @@ add_executable(test_config_endpoints
     test_config_endpoints.cpp
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
+    ../src/simple_scheduler.cpp
+    stubs/http_server_manager_stub.cpp
     ../src/core/memory_pool.cpp
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp

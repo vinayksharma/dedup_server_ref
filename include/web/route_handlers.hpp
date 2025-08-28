@@ -541,7 +541,7 @@ private:
         {
             auto body = nlohmann::json::parse(req.body);
             auto &config = PocoConfigAdapter::getInstance();
-            config.updateServerConfig(body.dump());
+            config.updateServerConfig(req.body); // Use the raw request body instead of re-serializing
             res.set_content(json{{"message", "Server configuration updated successfully"}}.dump(), "application/json");
             Logger::info("Server configuration updated successfully");
         }

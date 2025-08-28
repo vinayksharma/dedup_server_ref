@@ -11,7 +11,7 @@
 #include "config_observer.hpp"
 
 PocoConfigAdapter::PocoConfigAdapter()
-    : poco_cfg_(PocoConfigManager::getInstance())
+    : poco_cfg_(PocoConfigManager::getInstance()), config_file_path_("config.json")
 {
     Logger::info("PocoConfigAdapter constructor called");
 
@@ -31,6 +31,7 @@ PocoConfigAdapter::PocoConfigAdapter()
         if (poco_cfg_.load(path))
         {
             Logger::info("Configuration loaded from " + path + " (primary source)");
+            config_file_path_ = path; // Store the path that was successfully loaded
             loaded = true;
             break;
         }
@@ -1074,14 +1075,14 @@ void PocoConfigAdapter::persistChanges(const std::string &changed_key)
 {
     try
     {
-        // Save configuration to config.json
-        if (!poco_cfg_.save("config.json"))
+        // Save configuration to the same path it was loaded from
+        if (!poco_cfg_.save(config_file_path_))
         {
-            Logger::error("Failed to persist configuration changes to config.json");
+            Logger::error("Failed to persist configuration changes to " + config_file_path_);
             return;
         }
 
-        Logger::info("Configuration changes persisted to config.json" +
+        Logger::info("Configuration changes persisted to " + config_file_path_ +
                      (changed_key.empty() ? "" : " (key: " + changed_key + ")"));
     }
     catch (const std::exception &e)

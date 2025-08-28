@@ -29,6 +29,7 @@
 #include "core/cache_config_observer.hpp"
 #include "core/processing_config_observer.hpp"
 #include "core/dedup_mode_config_observer.hpp"
+#include "core/http_server_manager.hpp"
 #include <httplib.h>
 #include <iostream>
 #include <memory>
@@ -525,29 +526,18 @@ int main(int argc, char *argv[])
             Logger::error("Error in scheduled processing: " + std::string(e.what()));
         } });
 
-    Status status;
-    Auth auth(config_manager.getAuthSecret()); // Use config from manager
+    // Initialize and start the HTTP server manager
+    auto &http_server_manager = HttpServerManager::getInstance();
 
-    httplib::Server svr;
-    g_server = &svr; // Set global pointer for signal handling
+    // Subscribe the HTTP server manager to configuration changes for real-time server updates
+    config_manager.subscribe(&http_server_manager);
+    Logger::info("HttpServerManager subscribed to configuration changes for real-time server configuration updates");
 
-    // Serve OpenAPI documentation
-    svr.Get(ServerConfig::SWAGGER_JSON_PATH, [](const httplib::Request &, httplib::Response &res)
-            { res.set_content(OpenApiDocs::getSpec(), "application/json"); });
+    // Start the HTTP server
+    http_server_manager.start(config_manager.getServerHost(), config_manager.getServerPort());
 
-    // Serve Swagger UI
-    svr.Get(ServerConfig::API_DOCS_PATH, [](const httplib::Request &, httplib::Response &res)
-            { res.set_content(OpenApiDocs::getSwaggerUI(), "text/html"); });
-
-    // Setup routes
-    RouteHandlers::setupRoutes(svr, status, auth);
-
-    std::cout << "Server starting on http://" << config_manager.getServerHost() << ":" << config_manager.getServerPort() << std::endl;
-    std::cout << "API documentation available at: http://" << config_manager.getServerHost() << ":" << config_manager.getServerPort() << ServerConfig::API_DOCS_PATH << std::endl;
-
-    // Start the server in a separate thread to allow for graceful shutdown
-    std::thread server_thread([&svr, &config_manager]()
-                              { svr.listen(config_manager.getServerHost(), config_manager.getServerPort()); });
+    // Set global pointer for signal handling (for backward compatibility)
+    g_server = http_server_manager.getServer();
 
     // Wait for shutdown signal
     while (!g_shutdown_requested)
@@ -569,11 +559,8 @@ int main(int argc, char *argv[])
     ScanThreadPoolManager::getInstance().shutdown();
     DatabaseConnectionPool::getInstance().shutdown();
 
-    // Wait for server thread to finish
-    if (server_thread.joinable())
-    {
-        server_thread.join();
-    }
+    // Stop the HTTP server manager
+    http_server_manager.stop();
 
     // Safety mechanisms shutdown
     Logger::info("Safety mechanisms shutdown complete");

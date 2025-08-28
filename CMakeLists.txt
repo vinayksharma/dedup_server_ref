@@ -99,6 +99,7 @@ set(SOURCES
     src/core/video_processing_config_observer.cpp
     src/core/scan_thread_pool_manager.cpp
     src/core/database_connection_pool.cpp
+    src/core/http_server_manager.cpp
     src/cache_config_observer.cpp
     src/processing_config_observer.cpp
     src/dedup_mode_config_observer.cpp
@@ -132,6 +133,7 @@ set(HEADERS
     include/core/media_processor.hpp
     include/core/simple_scheduler.hpp
     include/core/file_scanner.hpp
+    include/core/http_server_manager.hpp
     include/database/database_manager.hpp
     include/core/file_processor.hpp
     include/core/media_processing_orchestrator.hpp
@@ -185,6 +187,8 @@ FetchContent_Declare(
     GIT_TAG v1.14.0
 )
 FetchContent_MakeAvailable(googletest)
+
+
 
 # Add httplib
 FetchContent_Declare(

@@ -525,6 +525,7 @@ add_executable(test_config_persistence
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
+    ../src/core/scan_thread_pool_manager.cpp
     ../src/core/threading_config_observer.cpp
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
@@ -534,6 +535,7 @@ target_link_libraries(test_config_persistence
     gtest gtest_main pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    TBB::tbb
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -546,6 +548,7 @@ add_executable(test_config_endpoints
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
+    ../src/core/scan_thread_pool_manager.cpp
     ../src/core/threading_config_observer.cpp
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
@@ -558,6 +561,7 @@ target_link_libraries(test_config_endpoints
     gtest gtest_main pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json
+    TBB::tbb
     Poco::Util
     Poco::JSON
     Poco::Foundation

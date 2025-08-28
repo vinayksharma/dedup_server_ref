@@ -1,5 +1,6 @@
 #include "core/scan_config_observer.hpp"
 #include "poco_config_adapter.hpp"
+#include "core/scan_thread_pool_manager.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
 
@@ -66,13 +67,37 @@ void ScanConfigObserver::handleScanThreadCountChange(int new_thread_count)
 {
     Logger::info("ScanConfigObserver: Scan thread count configuration changed to: " + std::to_string(new_thread_count));
 
-    // TODO: Implement actual scan thread count change logic
-    // This would involve:
-    // 1. Updating the scan thread pool configuration
-    // 2. Restarting scan operations with the new thread count
-    // 3. Logging the change for audit purposes
+    try
+    {
+        // Get the scan thread pool manager instance
+        auto &scan_thread_manager = ScanThreadPoolManager::getInstance();
 
-    Logger::warn("ScanConfigObserver: Scan thread count change detected but not yet implemented. "
-                 "Scan operations restart required to apply new thread count: " +
-                 std::to_string(new_thread_count));
+        if (!scan_thread_manager.isInitialized())
+        {
+            Logger::warn("ScanConfigObserver: Scan thread pool manager not initialized. Initializing with " +
+                         std::to_string(new_thread_count) + " threads");
+            scan_thread_manager.initialize(static_cast<size_t>(new_thread_count));
+        }
+        else
+        {
+            // Resize the existing thread pool
+            bool resize_success = scan_thread_manager.resizeThreadPool(static_cast<size_t>(new_thread_count));
+
+            if (resize_success)
+            {
+                Logger::info("ScanConfigObserver: Successfully resized scan thread pool to " +
+                             std::to_string(new_thread_count) + " threads");
+                Logger::info("ScanConfigObserver: New thread count will take effect for the next scan operation");
+            }
+            else
+            {
+                Logger::error("ScanConfigObserver: Failed to resize scan thread pool to " +
+                              std::to_string(new_thread_count) + " threads");
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("ScanConfigObserver: Exception during scan thread pool resize: " + std::string(e.what()));
+    }
 }

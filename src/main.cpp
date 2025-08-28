@@ -1,6 +1,7 @@
 #include "core/file_processor.hpp"
 #include "core/media_processing_orchestrator.hpp"
 #include "core/thread_pool_manager.hpp"
+#include "core/scan_thread_pool_manager.hpp"
 #include "core/file_scanner.hpp"
 #include "core/transcoding_manager.hpp"
 #include "web/route_handlers.hpp"
@@ -144,6 +145,11 @@ int main(int argc, char *argv[])
 
     // Initialize thread pool manager with configured thread count
     ThreadPoolManager::initialize(config_manager.getMaxProcessingThreads());
+
+    // Initialize scan thread pool manager with configured scan thread count
+    auto &scan_thread_manager = ScanThreadPoolManager::getInstance();
+    scan_thread_manager.initialize(config_manager.getMaxScanThreads());
+    Logger::info("Scan thread pool manager initialized with " + std::to_string(config_manager.getMaxScanThreads()) + " threads");
 
     // At the start of main, initialize the DatabaseManager singleton with default db path
     auto &db_manager = DatabaseManager::getInstance("scan_results.db");

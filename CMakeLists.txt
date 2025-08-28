@@ -97,6 +97,7 @@ set(SOURCES
     src/core/database_config_observer.cpp
     src/core/file_type_config_observer.cpp
     src/core/video_processing_config_observer.cpp
+    src/core/scan_thread_pool_manager.cpp
     src/cache_config_observer.cpp
     src/processing_config_observer.cpp
     src/dedup_mode_config_observer.cpp
@@ -134,6 +135,7 @@ set(HEADERS
     include/core/file_processor.hpp
     include/core/media_processing_orchestrator.hpp
     include/core/thread_pool_manager.hpp
+    include/core/scan_thread_pool_manager.hpp
     include/core/transcoding_manager.hpp
     include/logging/logger.hpp
     include/web/openapi_docs.hpp

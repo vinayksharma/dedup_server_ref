@@ -186,6 +186,13 @@ int main(int argc, char *argv[])
     config_manager.subscribe(processing_config_observer.get());
     config_manager.subscribe(dedup_mode_config_observer.get());
 
+    // Initialize and start the simple scheduler
+    auto &scheduler = SimpleScheduler::getInstance();
+
+    // Subscribe the scheduler to configuration changes for real-time interval updates
+    config_manager.subscribe(&scheduler);
+    Logger::info("SimpleScheduler subscribed to configuration changes for real-time scan and processing interval updates");
+
     // Start watching configuration for runtime changes
     config_manager.startWatching("config/config.json", 2);
 
@@ -239,9 +246,6 @@ int main(int argc, char *argv[])
 
     // Start transcoding after queue restoration
     transcoding_manager.startTranscoding();
-
-    // Initialize and start the simple scheduler
-    auto &scheduler = SimpleScheduler::getInstance();
 
     // Start duplicate linker async process (wake on schedule and when new results land)
     DuplicateLinker::getInstance().start(db_manager, config_manager.getProcessingIntervalSeconds());

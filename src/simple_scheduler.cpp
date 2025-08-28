@@ -1,13 +1,25 @@
 #include "core/simple_scheduler.hpp"
-#include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
-#include <chrono>
+#include "poco_config_adapter.hpp"
+#include <algorithm>
 
 SimpleScheduler::SimpleScheduler()
 {
     Logger::info("SimpleScheduler constructor called");
-    last_scan_time_ = std::chrono::system_clock::now();
-    last_processing_time_ = std::chrono::system_clock::now();
+
+    // Initialize with current config values
+    try
+    {
+        auto &config_manager = PocoConfigAdapter::getInstance();
+        current_scan_interval_.store(config_manager.getScanIntervalSeconds());
+        current_processing_interval_.store(config_manager.getProcessingIntervalSeconds());
+        Logger::info("SimpleScheduler initialized with scan interval: " + std::to_string(current_scan_interval_.load()) +
+                     "s, processing interval: " + std::to_string(current_processing_interval_.load()) + "s");
+    }
+    catch (const std::exception &e)
+    {
+        Logger::warn("SimpleScheduler: Could not initialize with config values, using defaults: " + std::string(e.what()));
+    }
 }
 
 SimpleScheduler::~SimpleScheduler()
@@ -67,6 +79,71 @@ void SimpleScheduler::setProcessingCallback(std::function<void()> callback)
     processing_callback_ = callback;
 }
 
+void SimpleScheduler::onConfigUpdate(const ConfigUpdateEvent &event)
+{
+    // Check for scan interval changes
+    if (std::find(event.changed_keys.begin(), event.changed_keys.end(), "scan_interval_seconds") != event.changed_keys.end())
+    {
+        try
+        {
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            int new_interval = config_manager.getScanIntervalSeconds();
+            handleScanIntervalChange(new_interval);
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("SimpleScheduler: Error handling scan interval configuration change: " + std::string(e.what()));
+        }
+    }
+
+    // Check for processing interval changes
+    if (std::find(event.changed_keys.begin(), event.changed_keys.end(), "processing_interval_seconds") != event.changed_keys.end())
+    {
+        try
+        {
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            int new_interval = config_manager.getProcessingIntervalSeconds();
+            handleProcessingIntervalChange(new_interval);
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("SimpleScheduler: Error handling processing interval configuration change: " + std::string(e.what()));
+        }
+    }
+}
+
+void SimpleScheduler::handleScanIntervalChange(int new_interval)
+{
+    int old_interval = current_scan_interval_.load();
+    current_scan_interval_.store(new_interval);
+
+    Logger::info("SimpleScheduler: Scan interval changed from " + std::to_string(old_interval) +
+                 "s to " + std::to_string(new_interval) + "s");
+
+    // Reset the last scan time to allow immediate execution if the new interval is shorter
+    if (new_interval < old_interval)
+    {
+        last_scan_time_ = std::chrono::system_clock::now() - std::chrono::seconds(old_interval);
+        Logger::info("SimpleScheduler: Reset scan timer to allow immediate execution with new shorter interval");
+    }
+}
+
+void SimpleScheduler::handleProcessingIntervalChange(int new_interval)
+{
+    int old_interval = current_processing_interval_.load();
+    current_processing_interval_.store(new_interval);
+
+    Logger::info("SimpleScheduler: Processing interval changed from " + std::to_string(old_interval) +
+                 "s to " + std::to_string(new_interval) + "s");
+
+    // Reset the last processing time to allow immediate execution if the new interval is shorter
+    if (new_interval < old_interval)
+    {
+        last_processing_time_ = std::chrono::system_clock::now() - std::chrono::seconds(old_interval);
+        Logger::info("SimpleScheduler: Reset processing timer to allow immediate execution with new shorter interval");
+    }
+}
+
 void SimpleScheduler::schedulerLoop()
 {
     Logger::info("SimpleScheduler loop started");
@@ -74,10 +151,9 @@ void SimpleScheduler::schedulerLoop()
     while (running_.load())
     {
         auto now = std::chrono::system_clock::now();
-        auto &config_manager = PocoConfigAdapter::getInstance();
 
-        // Check scan interval
-        int scan_interval = config_manager.getScanIntervalSeconds();
+        // Use cached scan interval for better performance
+        int scan_interval = current_scan_interval_.load();
         auto time_since_last_scan = std::chrono::duration_cast<std::chrono::seconds>(
                                         now - last_scan_time_)
                                         .count();
@@ -97,8 +173,8 @@ void SimpleScheduler::schedulerLoop()
             }
         }
 
-        // Check processing interval
-        int processing_interval = config_manager.getProcessingIntervalSeconds();
+        // Use cached processing interval for better performance
+        int processing_interval = current_processing_interval_.load();
         auto time_since_last_processing = std::chrono::duration_cast<std::chrono::seconds>(
                                               now - last_processing_time_)
                                               .count();

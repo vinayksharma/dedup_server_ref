@@ -65,13 +65,8 @@ void coordinatedSignalHandler(int signal)
         g_server->stop();
     }
 
-    // Give a short grace period for cleanup, then force exit
-    std::thread([signal]()
-                {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        Logger::warn("Grace period expired, forcing exit");
-        _exit(1); })
-        .detach();
+    // Signal received, shutdown will be handled by main loop
+    // No automatic timer - only shutdown when explicitly requested
 }
 
 // Initialize coordinated signal handling
@@ -551,6 +546,11 @@ int main(int argc, char *argv[])
     g_server = nullptr; // Clear global pointer
 
     // Stop all components in reverse order
+    // Ensure DuplicateLinker worker thread is stopped and joined to avoid
+    // std::terminate during static destruction
+    DuplicateLinker::getInstance().stop();
+    // Stop transcoding manager threads before tearing down DB and pools
+    TranscodingManager::getInstance().shutdown();
     scheduler.stop();
 
     // Shutdown managers
@@ -565,7 +565,7 @@ int main(int argc, char *argv[])
     // Safety mechanisms shutdown
     Logger::info("Safety mechanisms shutdown complete");
 
-    // Cleanup singleton manager
+    // Cleanup singleton manager (PID file, etc.)
     SingletonManager::cleanup();
     Logger::info("Server shutdown complete");
     return 0;

@@ -1,4 +1,5 @@
 #include "core/transcoding_manager.hpp"
+#include "database/sql_scripts.hpp"
 #include "core/media_processor.hpp"
 #include "core/file_utils.hpp"
 #include <filesystem>
@@ -473,56 +474,14 @@ bool TranscodingManager::upgradeCacheMapSchema()
         }
         sqlite3_finalize(check_stmt);
 
-        // Add missing columns
-        if (!status_exists)
-        {
-            std::string alter_sql = "ALTER TABLE cache_map ADD COLUMN status INTEGER DEFAULT 0";
-            if (sqlite3_exec(db_manager_->db_, alter_sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-            {
-                Logger::error("Failed to add status column to cache_map table");
-                return false;
-            }
-            Logger::info("Added status column to cache_map table");
-        }
+        // Schema is now complete in table definitions - no ALTER TABLE needed
+        // All required columns should already exist
 
-        if (!worker_id_exists)
+        // Create index on status for faster job selection using SQL script
+        std::string index_script_path = DatabaseScripts::getScriptPath("create_indexes.sql");
+        if (!db_manager_->executeScript(index_script_path).success)
         {
-            std::string alter_sql = "ALTER TABLE cache_map ADD COLUMN worker_id TEXT";
-            if (sqlite3_exec(db_manager_->db_, alter_sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-            {
-                Logger::error("Failed to add worker_id column to cache_map table");
-                return false;
-            }
-            Logger::info("Added worker_id column to cache_map table");
-        }
-
-        if (!created_at_exists)
-        {
-            std::string alter_sql = "ALTER TABLE cache_map ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP";
-            if (sqlite3_exec(db_manager_->db_, alter_sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-            {
-                Logger::error("Failed to add created_at column to cache_map table");
-                return false;
-            }
-            Logger::info("Added created_at column to cache_map table");
-        }
-
-        if (!updated_at_exists)
-        {
-            std::string alter_sql = "ALTER TABLE cache_map ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP";
-            if (sqlite3_exec(db_manager_->db_, alter_sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-            {
-                Logger::error("Failed to add updated_at column to cache_map table");
-                return false;
-            }
-            Logger::info("Added updated_at column to cache_map table");
-        }
-
-        // Create index on status for faster job selection
-        std::string index_sql = "CREATE INDEX IF NOT EXISTS idx_cache_map_status ON cache_map(status, created_at)";
-        if (sqlite3_exec(db_manager_->db_, index_sql.c_str(), nullptr, nullptr, nullptr) != SQLITE_OK)
-        {
-            Logger::warn("Failed to create index on cache_map status (may already exist)");
+            Logger::warn("Failed to create indexes for cache_map table at: " + index_script_path + " (may already exist)");
         }
 
         Logger::info("cache_map table schema upgrade completed successfully");

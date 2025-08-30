@@ -1,4 +1,5 @@
 #include "database/database_manager.hpp"
+#include "database/sql_scripts.hpp"
 #include "poco_config_adapter.hpp"
 #include "core/duplicate_linker.hpp"
 #include "core/dedup_modes.hpp"
@@ -21,6 +22,7 @@
 #include <any>
 #include <future>
 #include <functional>
+#include <fstream>
 #include <openssl/sha.h>
 #include <unistd.h>
 
@@ -271,6 +273,9 @@ bool DatabaseManager::checkLastOperationSuccess()
 void DatabaseManager::initialize()
 {
     Logger::info("Initializing database tables");
+
+    // Always use inline SQL for now to ensure tests work
+    // TODO: Re-enable script-based initialization once path resolution is fixed
     if (!createScannedFilesTable())
         Logger::error("Failed to create scanned_files table");
     if (!createMediaProcessingResultsTable())
@@ -283,6 +288,7 @@ void DatabaseManager::initialize()
         Logger::error("Failed to create flags table");
     if (!createScannedFilesChangeTriggers())
         Logger::error("Failed to create scanned_files change triggers");
+
     Logger::info("Database tables initialization completed");
 }
 
@@ -1031,6 +1037,55 @@ DBOpResult DatabaseManager::executeStatement(const std::string &sql)
         if (rc != SQLITE_OK)
         {
             error_msg = "SQL execution failed: " + std::string(err_msg);
+            Logger::error(error_msg);
+            sqlite3_free(err_msg);
+            success = false;
+            return WriteOperationResult::Failure(error_msg);
+        }
+        return WriteOperationResult(true); });
+    waitForWrites();
+    if (!success)
+        return DBOpResult(false, error_msg);
+    return DBOpResult(true);
+}
+
+DBOpResult DatabaseManager::executeScript(const std::string &script_path)
+{
+    if (!waitForQueueInitialization())
+    {
+        std::string msg = "Access queue not initialized after retries";
+        Logger::error(msg);
+        return DBOpResult(false, msg);
+    }
+
+    std::ifstream script_file(script_path);
+    if (!script_file.is_open())
+    {
+        std::string msg = "Failed to open SQL script: " + script_path;
+        Logger::error(msg);
+        return DBOpResult(false, msg);
+    }
+
+    std::string script_content((std::istreambuf_iterator<char>(script_file)),
+                               std::istreambuf_iterator<char>());
+    script_file.close();
+
+    std::string error_msg;
+    bool success = true;
+    enqueueWriteInline([&](DatabaseManager &dbMan)
+                       {
+        if (!dbMan.db_)
+        {
+            error_msg = "Database not initialized";
+            Logger::error(error_msg);
+            success = false;
+            return WriteOperationResult::Failure(error_msg);
+        }
+        char *err_msg = nullptr;
+        int rc = sqlite3_exec(dbMan.db_, script_content.c_str(), nullptr, nullptr, &err_msg);
+        if (rc != SQLITE_OK)
+        {
+            error_msg = "SQL script execution failed: " + std::string(err_msg);
             Logger::error(error_msg);
             sqlite3_free(err_msg);
             success = false;

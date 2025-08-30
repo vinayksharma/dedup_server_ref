@@ -547,6 +547,13 @@ private:
      * @return DBOpResult with success flag and error message
      */
     DBOpResult executeStatement(const std::string &sql);
+
+    /**
+     * @brief Execute a SQL script file
+     * @param script_path Path to the SQL script file
+     * @return DBOpResult with success flag and error message
+     */
+    DBOpResult executeScript(const std::string &script_path);
     std::string resultToJson(const ProcessingResult &result);
     ProcessingResult jsonToResult(const std::string &json_str);
 

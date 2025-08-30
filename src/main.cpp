@@ -5,6 +5,7 @@
 #include "core/database_connection_pool.hpp"
 #include "core/file_scanner.hpp"
 #include "core/transcoding_manager.hpp"
+#include "core/decoder/media_decoder.hpp"
 #include "web/route_handlers.hpp"
 #include "auth/auth.hpp"
 #include "logging/logger.hpp"

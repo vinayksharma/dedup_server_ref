@@ -37,6 +37,7 @@
   },
   "dedup_mode": "BALANCED",
   "log_level": "DEBUG",
+  "max_decoder_threads": 2,
   "pre_process_quality_stack": true,
   "processing": {
     "batch_size": 50

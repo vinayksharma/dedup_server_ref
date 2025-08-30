@@ -298,6 +298,42 @@ void TranscodingManager::adjustCacheSizeSafely(size_t new_size_mb)
     }
 }
 
+void TranscodingManager::adjustMaxDecoderThreadsSafely(int new_max_threads)
+{
+    Logger::info("TranscodingManager: Safely adjusting max decoder threads from " + std::to_string(max_threads_) + " to " + std::to_string(new_max_threads));
+
+    // Store the old thread count for potential rollback
+    int old_max_threads = max_threads_;
+
+    try
+    {
+        // Update the thread count configuration
+        max_threads_ = new_max_threads;
+
+        Logger::info("TranscodingManager: Max decoder threads updated successfully to " + std::to_string(max_threads_));
+
+        // If we're currently running and the new thread count is different, we may need to adjust
+        // Note: For now, we just update the configuration. The actual thread count will be applied
+        // on the next restart of transcoding or when new threads are created.
+        if (running_.load() && old_max_threads != new_max_threads)
+        {
+            Logger::info("TranscodingManager: Thread count configuration updated. New threads will use the updated count.");
+
+            // Optionally, we could restart transcoding here to apply the new thread count immediately
+            // For now, we'll let it take effect on the next restart to avoid disrupting ongoing work
+        }
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error("TranscodingManager: Failed to adjust max decoder threads safely. Rolling back to previous count: " + std::string(e.what()));
+
+        // Rollback to previous thread count
+        max_threads_ = old_max_threads;
+
+        Logger::info("TranscodingManager: Max decoder threads rollback completed");
+    }
+}
+
 void TranscodingManager::restoreQueueFromDatabase()
 {
     Logger::info("Restoring transcoding queue from database...");

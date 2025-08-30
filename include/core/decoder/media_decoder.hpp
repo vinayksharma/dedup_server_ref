@@ -3,14 +3,16 @@
 
 #include <cstdint>
 #include <string>
+#include "config_observer.hpp"
 
 /**
  * @brief MediaDecoder class for managing media decoding operations
  *
  * This class provides access to media decoder configuration settings.
  * Currently supports reading the maximum number of decoder threads.
+ * Implements ConfigObserver to react to configuration changes in real-time.
  */
-class MediaDecoder
+class MediaDecoder : public ConfigObserver
 {
 public:
     /**
@@ -32,6 +34,17 @@ public:
     uint32_t getCacheSizeMB() const;
 
     /**
+     * @brief Handle configuration changes (ConfigObserver implementation)
+     * @param event Configuration change event
+     */
+    void onConfigUpdate(const ConfigUpdateEvent &event) override;
+
+    /**
+     * @brief Refresh configuration from the configuration manager
+     */
+    void refreshConfiguration();
+
+    /**
      * @brief Destructor
      */
     ~MediaDecoder() = default;
@@ -51,6 +64,12 @@ private:
      * @brief Deleted assignment operator
      */
     MediaDecoder &operator=(const MediaDecoder &) = delete;
+
+    /**
+     * @brief Notify components of max_decoder_threads changes
+     * @param new_max_threads New maximum number of decoder threads
+     */
+    void notifyMaxDecoderThreadsChanged(int new_max_threads);
 
     /**
      * @brief Maximum number of decoder threads

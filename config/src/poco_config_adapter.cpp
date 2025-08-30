@@ -409,15 +409,16 @@ void PocoConfigAdapter::setDatabaseThreads(int threads)
 
 void PocoConfigAdapter::setMaxDecoderThreads(int threads)
 {
-    // Update Poco config
+    // Update Poco config (both legacy flat key and namespaced key for compatibility)
     poco_cfg_.update({{"max_decoder_threads", threads}});
+    poco_cfg_.update({{"threading.max_decoder_threads", threads}});
 
-    // Persist changes to config.json
-    persistChanges("max_decoder_threads");
+    // Persist changes to config.json (prefer namespaced key)
+    persistChanges("threading.max_decoder_threads");
 
-    // Publish event
+    // Publish event with both key variants so all observers react
     ConfigUpdateEvent event;
-    event.changed_keys = {"max_decoder_threads"};
+    event.changed_keys = {"max_decoder_threads", "threading.max_decoder_threads"};
     event.source = "api";
     event.update_id = generateUpdateId();
 

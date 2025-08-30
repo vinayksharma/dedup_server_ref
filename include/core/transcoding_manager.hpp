@@ -392,4 +392,10 @@ private:
      * @param new_size_mb New cache size in MB
      */
     void adjustCacheSizeSafely(size_t new_size_mb);
+
+    /**
+     * @brief Safely adjust max decoder threads based on configuration changes
+     * @param new_max_threads New maximum number of decoder threads
+     */
+    void adjustMaxDecoderThreadsSafely(int new_max_threads);
 };

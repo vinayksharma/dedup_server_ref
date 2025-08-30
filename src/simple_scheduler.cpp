@@ -1,6 +1,7 @@
 #include "core/simple_scheduler.hpp"
 #include "logging/logger.hpp"
 #include "poco_config_adapter.hpp"
+#include "core/shutdown_manager.hpp"
 #include <algorithm>
 
 SimpleScheduler::SimpleScheduler()
@@ -150,6 +151,10 @@ void SimpleScheduler::schedulerLoop()
 
     while (running_.load())
     {
+        if (ShutdownManager::getInstance().isShutdownRequested())
+        {
+            break;
+        }
         auto now = std::chrono::system_clock::now();
 
         // Use cached scan interval for better performance
@@ -195,7 +200,15 @@ void SimpleScheduler::schedulerLoop()
         }
 
         // Sleep for a short interval before checking again
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        // Keep sleep short to be responsive to shutdown
+        for (int i = 0; i < 10; ++i)
+        {
+            if (!running_.load() || ShutdownManager::getInstance().isShutdownRequested())
+            {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
     }
 
     Logger::info("SimpleScheduler loop ended");

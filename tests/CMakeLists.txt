@@ -11,6 +11,7 @@ set(TEST_SOURCES
     ../config/tests/poco_config_adapter_test.cpp
     ../config/tests/test_config_persistence.cpp
     test_server_config_observer.cpp
+    shutdown_manager_test.cpp
     auth_test.cpp
     database_manager_test.cpp
     file_processor_test.cpp
@@ -26,6 +27,7 @@ set(DEDUP_TESTS_SOURCES
     ../config/src/poco_config_manager.cpp
     ../config/src/poco_config_adapter.cpp
     ../src/core/server_config_observer.cpp
+    ../src/core/shutdown_manager.cpp
     stubs/http_server_manager_stub.cpp
     ../src/media_processor.cpp
     ../src/file_utils.cpp
@@ -92,6 +94,7 @@ add_executable(media_processing_orchestrator_test
     ../src/transcoding_manager.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(media_processing_orchestrator_test
@@ -134,6 +137,7 @@ add_executable(cache_size_test
     ../src/database/db_performance_logger.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(cache_size_test PRIVATE
@@ -164,6 +168,7 @@ add_executable(smart_cache_cleanup_test
     ../src/database/db_performance_logger.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(smart_cache_cleanup_test PRIVATE
@@ -195,6 +200,7 @@ add_executable(raw_file_test
     ../src/database/db_performance_logger.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(raw_file_test PRIVATE
@@ -243,6 +249,7 @@ add_executable(media_processor_example
     ../src/mount_manager.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(media_processor_example PRIVATE
@@ -274,6 +281,7 @@ add_executable(file_processor_example
     ../src/file_utils.cpp
     ../config/src/poco_config_adapter.cpp
     ../config/src/poco_config_manager.cpp
+    ../src/core/shutdown_manager.cpp
 )
 
 target_link_libraries(file_processor_example PRIVATE
@@ -544,6 +552,7 @@ add_executable(test_config_persistence
     ../src/duplicate_linker.cpp
     ../src/mount_manager.cpp
     ../src/database/db_performance_logger.cpp
+    ../src/core/shutdown_manager.cpp
 )
 target_link_libraries(test_config_persistence 
     gtest gtest_main pthread
@@ -590,6 +599,7 @@ add_executable(test_config_endpoints
     ../src/cache_config_observer.cpp
     ../src/processing_config_observer.cpp
     ../src/dedup_mode_config_observer.cpp
+    ../src/core/shutdown_manager.cpp
 )
 target_link_libraries(test_config_endpoints 
     gtest gtest_main pthread

@@ -39,56 +39,15 @@
 #include <tbb/blocked_range.h>
 #include <tbb/mutex.h>
 #include <tbb/task_arena.h>
+#include "core/shutdown_manager.hpp"
 
-// Global variables for signal handling
+// Global variables for HTTP server pointer (optional)
 static httplib::Server *g_server = nullptr;
-static std::atomic<bool> g_shutdown_requested{false};
-static std::atomic<bool> g_shutdown_in_progress{false};
-
-// Coordinated signal handler for clean shutdown
-void coordinatedSignalHandler(int signal)
-{
-    if (g_shutdown_in_progress.exchange(true))
-    {
-        // Shutdown already in progress, exit immediately
-        Logger::warn("Shutdown already in progress, exiting immediately");
-        _exit(1);
-    }
-
-    Logger::info("Received signal " + std::to_string(signal) + ", initiating graceful shutdown...");
-    g_shutdown_requested = true;
-
-    // Stop the HTTP server if it's running
-    if (g_server)
-    {
-        Logger::info("Stopping HTTP server...");
-        g_server->stop();
-    }
-
-    // Signal received, shutdown will be handled by main loop
-    // No automatic timer - only shutdown when explicitly requested
-}
-
-// Initialize coordinated signal handling
-void initializeSignalHandling()
-{
-    // Remove any existing signal handlers to avoid conflicts
-    signal(SIGINT, SIG_DFL);
-    signal(SIGTERM, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
-
-    // Install our coordinated signal handler
-    signal(SIGINT, coordinatedSignalHandler);
-    signal(SIGTERM, coordinatedSignalHandler);
-    signal(SIGQUIT, coordinatedSignalHandler);
-
-    Logger::info("Coordinated signal handling initialized");
-}
 
 int main(int argc, char *argv[])
 {
     // Initialize coordinated signal handling FIRST
-    initializeSignalHandling();
+    ShutdownManager::getInstance().installSignalHandlers();
 
     // Initialize singleton manager with PID file
     SingletonManager::initialize("dedup_server.pid");
@@ -534,11 +493,8 @@ int main(int argc, char *argv[])
     // Set global pointer for signal handling (for backward compatibility)
     g_server = http_server_manager.getServer();
 
-    // Wait for shutdown signal
-    while (!g_shutdown_requested)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+    // Wait for shutdown signal via centralized manager
+    ShutdownManager::getInstance().waitForShutdown();
 
     Logger::info("Shutdown requested, cleaning up...");
 

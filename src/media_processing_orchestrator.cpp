@@ -1,6 +1,7 @@
 #include "core/media_processing_orchestrator.hpp"
 #include "core/media_processor.hpp"
 #include "core/transcoding_manager.hpp"
+#include "core/shutdown_manager.hpp"
 #include "database/database_manager.hpp"
 #include "core/duplicate_linker.hpp"
 #include "logging/logger.hpp"
@@ -419,10 +420,10 @@ void MediaProcessingOrchestrator::processingThreadFunction(int processing_interv
 {
     Logger::info("Processing thread started with interval: " + std::to_string(processing_interval_seconds) + " seconds");
 
-    while (timer_processing_running_.load() && !cancelled_.load())
+    while (timer_processing_running_.load() && !cancelled_.load() && !ShutdownManager::getInstance().isShutdownRequested())
     {
         // Check if we should stop
-        if (!timer_processing_running_.load() || cancelled_.load())
+        if (!timer_processing_running_.load() || cancelled_.load() || ShutdownManager::getInstance().isShutdownRequested())
         {
             break;
         }
@@ -473,13 +474,13 @@ void MediaProcessingOrchestrator::processingThreadFunction(int processing_interv
         }
 
         // Wait for next processing interval
-        if (timer_processing_running_.load() && !cancelled_.load())
+        if (timer_processing_running_.load() && !cancelled_.load() && !ShutdownManager::getInstance().isShutdownRequested())
         {
             Logger::debug("Waiting " + std::to_string(processing_interval_seconds) + " seconds until next processing run");
 
             std::unique_lock<std::mutex> lock(processing_mutex_);
             processing_cv_.wait_for(lock, std::chrono::seconds(processing_interval_seconds), [this]
-                                    { return !timer_processing_running_.load() || cancelled_.load(); });
+                                    { return !timer_processing_running_.load() || cancelled_.load() || ShutdownManager::getInstance().isShutdownRequested(); });
         }
     }
 

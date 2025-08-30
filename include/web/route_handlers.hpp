@@ -22,6 +22,7 @@
 #include "auth/auth.hpp"
 #include "auth/auth_middleware.hpp"
 #include "poco_config_adapter.hpp"
+#include "core/shutdown_manager.hpp"
 
 using json = nlohmann::json;
 
@@ -276,6 +277,31 @@ public:
                 {
             if (!AuthMiddleware::verify_auth(req, res, auth)) return;
             handleGetTableHash(req, res); });
+
+        // Administrative shutdown endpoint
+        svr.Post("/api/shutdown", [&](const httplib::Request &req, httplib::Response &res)
+                 {
+            if (!AuthMiddleware::verify_auth(req, res, auth)) return;
+            try {
+                std::string reason;
+                if (!req.body.empty()) {
+                    try {
+                        auto body = json::parse(req.body);
+                        reason = body.value("reason", std::string("API shutdown"));
+                    } catch (...) {
+                        reason = "API shutdown";
+                    }
+                } else {
+                    reason = "API shutdown";
+                }
+                ShutdownManager::getInstance().requestShutdown(reason);
+                res.set_content(json{{"message", "Shutdown requested"}, {"reason", reason}}.dump(), "application/json");
+                Logger::info("Shutdown requested via API: " + reason);
+            } catch (const std::exception &e) {
+                Logger::error("Shutdown API error: " + std::string(e.what()));
+                res.status = 500;
+                res.set_content(json{{"error", "Failed to request shutdown"}}.dump(), "application/json");
+            } });
     }
 
 private:

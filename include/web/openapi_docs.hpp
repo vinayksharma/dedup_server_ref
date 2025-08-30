@@ -432,6 +432,31 @@ public:
           "500": {"description": "Failed to get table hash"}
         }
       }
+    },
+    "/api/shutdown": {
+      "post": {
+        "summary": "Request graceful shutdown",
+        "description": "Initiate a coordinated graceful shutdown of the server",
+        "tags": ["Administration"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {"type": "string", "description": "Reason for shutdown"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Shutdown requested"},
+          "401": {"description": "Authentication required"}
+        }
+      }
     }
   }
 })";

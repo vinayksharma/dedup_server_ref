@@ -2,6 +2,7 @@
 #include "database/database_manager.hpp"
 #include "poco_config_adapter.hpp"
 #include "logging/logger.hpp"
+#include "core/shutdown_manager.hpp"
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
@@ -63,15 +64,15 @@ void DuplicateLinker::requestFullRescan()
 
 void DuplicateLinker::workerLoop()
 {
-    while (running_.load())
+    while (running_.load() && !ShutdownManager::getInstance().isShutdownRequested())
     {
         // Wait for interval or notification
         {
             std::unique_lock<std::mutex> lk(cv_mutex_);
             cv_.wait_for(lk, std::chrono::seconds(interval_seconds_), [this]
-                         { return !running_.load(); });
+                         { return !running_.load() || ShutdownManager::getInstance().isShutdownRequested(); });
         }
-        if (!running_.load())
+        if (!running_.load() || ShutdownManager::getInstance().isShutdownRequested())
             break;
 
         try

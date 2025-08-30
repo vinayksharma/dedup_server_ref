@@ -100,6 +100,7 @@ set(SOURCES
     src/core/scan_thread_pool_manager.cpp
     src/core/database_connection_pool.cpp
     src/core/http_server_manager.cpp
+    src/core/shutdown_manager.cpp
     src/cache_config_observer.cpp
     src/processing_config_observer.cpp
     src/dedup_mode_config_observer.cpp
@@ -134,6 +135,7 @@ set(HEADERS
     include/core/simple_scheduler.hpp
     include/core/file_scanner.hpp
     include/core/http_server_manager.hpp
+    include/core/shutdown_manager.hpp
     include/database/database_manager.hpp
     include/core/file_processor.hpp
     include/core/media_processing_orchestrator.hpp

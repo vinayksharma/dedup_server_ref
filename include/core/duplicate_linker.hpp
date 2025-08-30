@@ -33,6 +33,7 @@ private:
     DuplicateLinker &operator=(const DuplicateLinker &) = delete;
 
     void workerLoop();
+    void handleProcessingIntervalChange(int new_interval);
 
     std::atomic<bool> running_{false};
     std::thread worker_;

@@ -5,17 +5,17 @@
   },
   "categories": {
     "audio": {
-      "mp3": true,
-      "wav": true,
-      "flac": true,
-      "ogg": true,
       "aac": true,
-      "m4a": true
+      "flac": true,
+      "m4a": true,
+      "mp3": true,
+      "ogg": true,
+      "wav": true
     },
     "images": {
       "gif": false,
-      "jpg": true,
       "jpeg": true,
+      "jpg": true,
       "png": true
     },
     "video": {

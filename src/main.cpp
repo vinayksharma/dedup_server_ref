@@ -205,6 +205,10 @@ int main(int argc, char *argv[])
     // Start duplicate linker async process (wake on schedule and when new results land)
     DuplicateLinker::getInstance().start(db_manager, config_manager.getProcessingIntervalSeconds());
 
+    // Subscribe the duplicate linker to configuration changes for real-time processing interval updates
+    config_manager.subscribe(&DuplicateLinker::getInstance());
+    Logger::info("DuplicateLinker subscribed to configuration changes for real-time processing interval updates");
+
     // Start the scheduler first to ensure it's ready
     scheduler.start();
 

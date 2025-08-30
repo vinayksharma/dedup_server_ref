@@ -20,6 +20,7 @@ set(TEST_SOURCES
     media_processor_test.cpp
     status_test.cpp
     test_env_setup.cpp
+    processing_interval_observability_test.cpp
 )
 
 # Add source files for dedup_tests

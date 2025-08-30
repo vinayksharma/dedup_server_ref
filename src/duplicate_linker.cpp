@@ -45,7 +45,9 @@ void DuplicateLinker::stop()
     running_.store(false);
     cv_.notify_all();
     if (worker_.joinable())
+    {
         worker_.join();
+    }
     Logger::info("DuplicateLinker stopped");
 }
 
@@ -60,6 +62,38 @@ void DuplicateLinker::requestFullRescan()
     needs_full_rescan_.store(true);
     full_pass_completed_.store(false);
     cv_.notify_all();
+}
+
+void DuplicateLinker::onConfigUpdate(const ConfigUpdateEvent &event)
+{
+    // Check for processing interval changes
+    if (std::find(event.changed_keys.begin(), event.changed_keys.end(), "processing_interval_seconds") != event.changed_keys.end())
+    {
+        try
+        {
+            auto &config_manager = PocoConfigAdapter::getInstance();
+            int new_interval = config_manager.getProcessingIntervalSeconds();
+            handleProcessingIntervalChange(new_interval);
+        }
+        catch (const std::exception &e)
+        {
+            Logger::error("DuplicateLinker: Error handling processing interval configuration change: " + std::string(e.what()));
+        }
+    }
+}
+
+void DuplicateLinker::handleProcessingIntervalChange(int new_interval)
+{
+    int old_interval = interval_seconds_;
+    interval_seconds_ = new_interval;
+
+    Logger::info("DuplicateLinker: Processing interval changed from " + std::to_string(old_interval) +
+                 "s to " + std::to_string(new_interval) + "s");
+
+    // Notify the worker thread to wake up and use the new interval
+    cv_.notify_all();
+
+    Logger::info("DuplicateLinker: Worker thread notified of interval change, new interval will take effect immediately");
 }
 
 void DuplicateLinker::workerLoop()
@@ -242,23 +276,6 @@ void DuplicateLinker::workerLoop()
         catch (const std::exception &e)
         {
             Logger::error(std::string("DuplicateLinker error: ") + e.what());
-        }
-    }
-}
-
-void DuplicateLinker::onConfigUpdate(const ConfigUpdateEvent &event)
-{
-    // Check if dedup_mode was changed
-    for (const auto &key : event.changed_keys)
-    {
-        if (key == "dedup_mode")
-        {
-            std::cout << "[CONFIG CHANGE] DuplicateLinker: Deduplication mode changed - will use new mode for future linking" << std::endl;
-            Logger::info("DuplicateLinker: Deduplication mode changed - will use new mode for future linking");
-
-            // Request a full rescan when mode changes to ensure links are updated for the new mode
-            requestFullRescan();
-            break;
         }
     }
 }

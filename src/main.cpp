@@ -222,6 +222,13 @@ int main(int argc, char *argv[])
             // Small delay to ensure server is fully started
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             
+            // Check for shutdown before proceeding
+            if (ShutdownManager::getInstance().isShutdownRequested())
+            {
+                Logger::info("Startup scan thread: shutdown requested, exiting early");
+                return;
+            }
+            
             // Get all stored scan paths from database
             auto &db_manager = DatabaseManager::getInstance();
             auto scan_paths = db_manager.getUserInputs("scan_path");
@@ -267,6 +274,13 @@ int main(int argc, char *argv[])
                 // Process paths assigned to this thread in round-robin fashion
                 for (size_t i = thread_id; i < scan_paths.size(); i += max_scan_threads)
                 {
+                    // Check for shutdown before processing each path
+                    if (ShutdownManager::getInstance().isShutdownRequested())
+                    {
+                        Logger::info("Startup scan thread " + std::to_string(thread_id) + ": shutdown requested, stopping scan");
+                        return;
+                    }
+                    
                     const auto &scan_path = scan_paths[i];
 
                     try
@@ -307,14 +321,26 @@ int main(int argc, char *argv[])
 
             Logger::info("All immediate startup scans completed - Total files stored: " + std::to_string(total_files_stored.load()));
 
-            // If files were found, trigger immediate processing
-            if (total_files_stored.load() > 0)
+            // If files were found, trigger immediate processing (but only if not shutting down)
+            if (total_files_stored.load() > 0 && !ShutdownManager::getInstance().isShutdownRequested())
             {
                 Logger::info("Files found during startup scan, triggering immediate processing...");
                 
                 // Ensure TranscodingManager is fully ready before starting TBB processing
                 Logger::info("Waiting for TranscodingManager to be fully ready...");
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // Wait 2 seconds
+                
+                // Wait with shutdown checking instead of blind sleep
+                for (int i = 0; i < 20 && !ShutdownManager::getInstance().isShutdownRequested(); ++i)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+                
+                // Check for shutdown before proceeding with processing
+                if (ShutdownManager::getInstance().isShutdownRequested())
+                {
+                    Logger::info("Startup scan thread: shutdown requested, skipping processing");
+                    return;
+                }
                 
                 try
                 {
@@ -499,35 +525,62 @@ int main(int argc, char *argv[])
     g_server = http_server_manager.getServer();
 
     // Wait for shutdown signal via centralized manager
+    std::cout << "Server is running. Press Ctrl+C to shutdown gracefully.\n"
+              << std::flush;
     ShutdownManager::getInstance().waitForShutdown();
 
+    std::cout << "=== STARTING SHUTDOWN SEQUENCE ===\n"
+              << std::flush;
     Logger::info("Shutdown requested, cleaning up...");
 
     // Cleanup sequence
     g_server = nullptr; // Clear global pointer
 
+    // Stop the HTTP server manager FIRST to stop accepting new requests
+    std::cout << "Stopping HTTP server...\n"
+              << std::flush;
+    http_server_manager.stop();
+    Logger::info("HTTP server stopped");
+
     // Stop all components in reverse order
-    // Ensure DuplicateLinker worker thread is stopped and joined to avoid
-    // std::terminate during static destruction
+    std::cout << "Stopping DuplicateLinker...\n"
+              << std::flush;
     DuplicateLinker::getInstance().stop();
-    // Stop transcoding manager threads before tearing down DB and pools
+    Logger::info("DuplicateLinker stopped");
+
+    std::cout << "Stopping TranscodingManager...\n"
+              << std::flush;
     TranscodingManager::getInstance().shutdown();
+    Logger::info("TranscodingManager stopped");
+
+    std::cout << "Stopping scheduler...\n"
+              << std::flush;
     scheduler.stop();
+    Logger::info("Scheduler stopped");
 
     // Shutdown managers
+    std::cout << "Shutting down managers...\n"
+              << std::flush;
     DatabaseManager::shutdown();
     ThreadPoolManager::shutdown();
     ScanThreadPoolManager::getInstance().shutdown();
     DatabaseConnectionPool::getInstance().shutdown();
-
-    // Stop the HTTP server manager
-    http_server_manager.stop();
+    Logger::info("All managers shut down");
 
     // Safety mechanisms shutdown
     Logger::info("Safety mechanisms shutdown complete");
 
     // Cleanup singleton manager (PID file, etc.)
+    std::cout << "Cleaning up PID file...\n"
+              << std::flush;
     SingletonManager::cleanup();
+
+    std::cout << "=== SERVER SHUTDOWN COMPLETE ===\n"
+              << std::flush;
     Logger::info("Server shutdown complete");
-    return 0;
+
+    // Force exit to ensure process terminates even if some threads are still running
+    std::cout << "Forcing process exit...\n"
+              << std::flush;
+    std::exit(0);
 }

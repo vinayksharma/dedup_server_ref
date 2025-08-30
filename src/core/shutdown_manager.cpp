@@ -2,6 +2,7 @@
 #include "logging/logger.hpp"
 #include <atomic>
 #include <csignal>
+#include <iostream>
 #include <unistd.h>
 
 volatile sig_atomic_t ShutdownManager::signal_flag_ = 0;
@@ -90,6 +91,7 @@ void ShutdownManager::requestShutdown(const std::string &reason, int signal_numb
     if (shutdown_in_progress_.exchange(true))
     {
         // Already in progress; fast exit if we are in a signal path
+        Logger::info("ShutdownManager: shutdown already in progress, ignoring duplicate request");
         return;
     }
 
@@ -106,11 +108,22 @@ void ShutdownManager::requestShutdown(const std::string &reason, int signal_numb
 
     if (signal_number != 0)
     {
-        Logger::info("ShutdownManager: received signal " + std::to_string(signal_number) + ", initiating graceful shutdown");
+        Logger::info("ShutdownManager: received signal " + std::to_string(signal_number) + ", forcing immediate shutdown");
+        std::cout << "\n=== FORCE SHUTDOWN INITIATED ===\n";
+        std::cout << "Signal " << signal_number << " received, forcing immediate shutdown...\n";
+        std::cout << "Server has recovery mechanisms for partial states.\n";
+        std::cout.flush();
+
+        // Force immediate exit for signal-based shutdowns
+        std::exit(0);
     }
     else
     {
         Logger::info("ShutdownManager: programmatic shutdown requested - " + reason);
+        std::cout << "\n=== SHUTDOWN INITIATED ===\n";
+        std::cout << "Programmatic shutdown requested: " << reason << "\n";
+        std::cout << "Please wait while the server completes its shutdown process.\n";
+        std::cout.flush();
     }
 }
 

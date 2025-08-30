@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
 
@@ -11,16 +12,7 @@ std::string SingletonManager::pid_file_path;
 std::ofstream SingletonManager::pid_file;
 bool SingletonManager::is_running = false;
 
-SingletonManager::SingletonManager()
-{
-    Logger::info("SingletonManager constructor called");
-}
-
-SingletonManager::~SingletonManager()
-{
-    removePidFile();
-    Logger::info("SingletonManager destructor called");
-}
+// Constructor and destructor are defaulted in header
 
 SingletonManager &SingletonManager::getInstance()
 {
@@ -221,37 +213,13 @@ pid_t SingletonManager::getPidFromFile()
     return pid;
 }
 
-void SingletonManager::signalHandler(int signal)
-{
-    Logger::info("Received signal " + std::to_string(signal) + ", shutting down gracefully...");
-
-    // CRITICAL: Clean up PID file immediately to prevent stale PID issues
-    try
-    {
-        Logger::info("Cleaning up PID file due to signal " + std::to_string(signal));
-        SingletonManager::getInstance().removePidFile();
-        Logger::info("PID file cleanup completed");
-    }
-    catch (...)
-    {
-        // Ignore any exceptions during cleanup
-        Logger::warn("Error during PID file cleanup in signal handler");
-    }
-
-    // Flush any pending output
-    std::cout.flush();
-    std::cerr.flush();
-
-    // Exit cleanly - this ensures PID file is removed even if main() cleanup doesn't run
-    Logger::info("Signal handler cleanup complete, exiting...");
-    _exit(0);
-}
+// Signal handling is now managed by ShutdownManager in main.cpp
 
 void SingletonManager::cleanup()
 {
     // Clean up PID file if still running
     if (is_running)
     {
-        removePidFile();
+        getInstance().removePidFile();
     }
 }

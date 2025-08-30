@@ -45,7 +45,7 @@ set(DEDUP_TESTS_SOURCES
     ../src/media_processing_orchestrator.cpp
     ../src/thread_pool_manager.cpp
     ../src/simple_scheduler.cpp
-    ../src/singleton_manager.cpp
+    # ../src/singleton_manager.cpp  # Removed - using core/singleton_manager.cpp instead
     ../src/cache/decoder_cache.cpp
     ../src/decoder/media_decoder.cpp
     ${TEST_SOURCES}

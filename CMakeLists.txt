@@ -113,12 +113,13 @@ set(SOURCES
     src/simple_scheduler.cpp
     src/file_scanner.cpp
     src/mount_manager.cpp
-    src/singleton_manager.cpp
+    # src/singleton_manager.cpp  # Removed - using core/singleton_manager.cpp instead
     src/duplicate_linker.cpp
     src/cache/decoder_cache.cpp
     src/decoder/media_decoder.cpp
     src/transcoding_manager.cpp
     src/core/memory_pool.cpp
+    src/core/singleton_manager.cpp
 )
 
 # Add header files

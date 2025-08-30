@@ -37,6 +37,13 @@ namespace DatabaseScripts
     const std::string CREATE_INDEXES_SCRIPT = getScriptPath("create_indexes.sql");
     const std::string INIT_DATABASE_SCRIPT = getScriptPath("init_database.sql");
 
+    // Operation script file paths
+    const std::string SCANNED_FILES_OPERATIONS_SCRIPT = getScriptPath("scanned_files_operations.sql");
+    const std::string MEDIA_PROCESSING_OPERATIONS_SCRIPT = getScriptPath("media_processing_operations.sql");
+    const std::string CACHE_MAP_OPERATIONS_SCRIPT = getScriptPath("cache_map_operations.sql");
+    const std::string FLAGS_AND_USER_INPUTS_OPERATIONS_SCRIPT = getScriptPath("flags_and_user_inputs_operations.sql");
+    const std::string STATISTICS_AND_REPORTING_SCRIPT = getScriptPath("statistics_and_reporting.sql");
+
     // Individual table creation scripts
     const std::string MEDIA_PROCESSING_RESULTS_TABLE_SCRIPT = getScriptPath("create_tables.sql");
     const std::string SCANNED_FILES_TABLE_SCRIPT = getScriptPath("create_tables.sql");

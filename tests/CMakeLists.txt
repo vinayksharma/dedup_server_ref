@@ -539,7 +539,6 @@ add_executable(test_config_persistence
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
-    ../src/core/scan_thread_pool_manager.cpp
     ../src/core/threading_config_observer.cpp
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp
@@ -583,7 +582,6 @@ add_executable(test_config_endpoints
     ../src/core/logger_observer.cpp
     ../src/core/server_config_observer.cpp
     ../src/core/scan_config_observer.cpp
-    ../src/core/scan_thread_pool_manager.cpp
     ../src/core/threading_config_observer.cpp
     ../src/core/database_config_observer.cpp
     ../src/core/file_type_config_observer.cpp

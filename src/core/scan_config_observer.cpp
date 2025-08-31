@@ -1,6 +1,6 @@
 #include "core/scan_config_observer.hpp"
 #include "poco_config_adapter.hpp"
-#include "core/scan_thread_pool_manager.hpp"
+// #include "core/scan_thread_pool_manager.hpp"  // Removed - no longer needed
 #include "core/simple_scheduler.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
@@ -92,32 +92,9 @@ void ScanConfigObserver::handleScanThreadCountChange(int new_thread_count)
 
     try
     {
-        // Get the scan thread pool manager instance
-        auto &scan_thread_manager = ScanThreadPoolManager::getInstance();
-
-        if (!scan_thread_manager.isInitialized())
-        {
-            Logger::warn("ScanConfigObserver: Scan thread pool manager not initialized. Initializing with " +
-                         std::to_string(new_thread_count) + " threads");
-            scan_thread_manager.initialize(static_cast<size_t>(new_thread_count));
-        }
-        else
-        {
-            // Resize the existing thread pool
-            bool resize_success = scan_thread_manager.resizeThreadPool(static_cast<size_t>(new_thread_count));
-
-            if (resize_success)
-            {
-                Logger::info("ScanConfigObserver: Successfully resized scan thread pool to " +
-                             std::to_string(new_thread_count) + " threads");
-                Logger::info("ScanConfigObserver: New thread count will take effect for the next scan operation");
-            }
-            else
-            {
-                Logger::error("ScanConfigObserver: Failed to resize scan thread pool to " +
-                              std::to_string(new_thread_count) + " threads");
-            }
-        }
+        // Note: ScanThreadPoolManager removed - using simple sequential scanning
+        Logger::info("ScanConfigObserver: Scan thread count change ignored - using sequential scanning");
+        Logger::info("ScanConfigObserver: Sequential scanning doesn't support thread count changes");
     }
     catch (const std::exception &e)
     {

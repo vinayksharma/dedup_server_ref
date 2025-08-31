@@ -43,7 +43,7 @@ set(DEDUP_TESTS_SOURCES
     ../src/mount_manager.cpp
     ../src/transcoding_manager.cpp
     ../src/media_processing_orchestrator.cpp
-    ../src/thread_pool_manager.cpp
+    ../src/core/continuous_processing_manager.cpp
     ../src/simple_scheduler.cpp
     # ../src/singleton_manager.cpp  # Removed - using core/singleton_manager.cpp instead
     ../src/cache/decoder_cache.cpp
@@ -73,7 +73,7 @@ target_link_libraries(dedup_tests PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -113,7 +113,7 @@ target_link_libraries(media_processing_orchestrator_test
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -152,7 +152,7 @@ target_link_libraries(cache_size_test PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -183,7 +183,7 @@ target_link_libraries(smart_cache_cleanup_test PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -215,7 +215,7 @@ target_link_libraries(raw_file_test PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -237,7 +237,7 @@ target_link_libraries(file_type_config_test PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -264,7 +264,7 @@ target_link_libraries(media_processor_example PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -296,7 +296,7 @@ target_link_libraries(file_processor_example PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -324,7 +324,7 @@ target_link_libraries(debug_config PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -346,7 +346,7 @@ target_link_libraries(test_mode_change PRIVATE
     ${FFMPEG_LIBRARIES}
     PkgConfig::LIBRAW
     yaml-cpp
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     Poco::Util
     Poco::JSON
     Poco::Foundation
@@ -399,7 +399,7 @@ target_link_libraries(cache_size_test
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     PkgConfig::OpenCV
     ${FFMPEG_LIBRARIES}
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
@@ -416,7 +416,7 @@ target_link_libraries(smart_cache_cleanup_test
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     PkgConfig::OpenCV
     ${FFMPEG_LIBRARIES}
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
@@ -433,7 +433,7 @@ target_link_libraries(raw_file_test
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     PkgConfig::OpenCV
     ${FFMPEG_LIBRARIES}
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
@@ -458,7 +458,7 @@ target_link_libraries(media_processor_example
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     PkgConfig::OpenCV
     ${FFMPEG_LIBRARIES}
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
@@ -474,7 +474,7 @@ target_link_libraries(file_processor_example
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     PkgConfig::OpenCV
     ${FFMPEG_LIBRARIES}
     $<$<BOOL:${VIPS_FOUND}>:PkgConfig::VIPS>
@@ -546,7 +546,7 @@ add_executable(test_config_persistence
     ../src/core/video_processing_config_observer.cpp
     ../src/core/database_connection_pool.cpp
     ../src/database/database_manager.cpp
-    ../src/thread_pool_manager.cpp
+    ../src/core/continuous_processing_manager.cpp
     ../src/media_processor.cpp
     ../src/transcoding_manager.cpp
     ../src/media_processing_orchestrator.cpp
@@ -566,7 +566,7 @@ target_link_libraries(test_config_persistence
     PkgConfig::OpenCV
     PkgConfig::LIBRAW
     ${FFMPEG_LIBRARIES}
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     yaml-cpp
     Poco::Util
     Poco::JSON
@@ -589,7 +589,7 @@ add_executable(test_config_endpoints
     ../src/core/file_type_config_observer.cpp
     ../src/core/video_processing_config_observer.cpp
     ../src/core/database_connection_pool.cpp
-    ../src/thread_pool_manager.cpp
+    ../src/core/continuous_processing_manager.cpp
     ../src/database/database_manager.cpp
     ../src/media_processor.cpp
     ../src/transcoding_manager.cpp
@@ -613,7 +613,7 @@ target_link_libraries(test_config_endpoints
     PkgConfig::OpenCV
     PkgConfig::LIBRAW
     ${FFMPEG_LIBRARIES}
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     yaml-cpp
     Poco::Util
     Poco::JSON

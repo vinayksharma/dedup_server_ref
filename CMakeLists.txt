@@ -13,8 +13,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(Poco REQUIRED COMPONENTS Util JSON Foundation)
 
-# Find TBB (Intel Threading Building Blocks)
-find_package(TBB REQUIRED)
+# TBB removed - no longer needed for continuous processing
 
 # Find SQLite3
 find_package(PkgConfig REQUIRED)
@@ -97,7 +96,7 @@ set(SOURCES
     src/core/database_config_observer.cpp
     src/core/file_type_config_observer.cpp
     src/core/video_processing_config_observer.cpp
-    src/core/scan_thread_pool_manager.cpp
+    # src/core/scan_thread_pool_manager.cpp  # Removed - no longer needed
     src/core/database_connection_pool.cpp
     src/core/http_server_manager.cpp
     src/core/shutdown_manager.cpp
@@ -108,7 +107,7 @@ set(SOURCES
     src/database/database_manager.cpp
     src/file_processor.cpp
     src/media_processing_orchestrator.cpp
-    src/thread_pool_manager.cpp
+    src/core/continuous_processing_manager.cpp
     src/database/db_performance_logger.cpp
     src/simple_scheduler.cpp
     src/file_scanner.cpp
@@ -140,8 +139,8 @@ set(HEADERS
     include/database/database_manager.hpp
     include/core/file_processor.hpp
     include/core/media_processing_orchestrator.hpp
-    include/core/thread_pool_manager.hpp
-    include/core/scan_thread_pool_manager.hpp
+    include/core/continuous_processing_manager.hpp
+    # include/core/scan_thread_pool_manager.hpp  # Removed - no longer needed
     include/core/database_connection_pool.hpp
     include/core/transcoding_manager.hpp
     include/logging/logger.hpp
@@ -165,7 +164,7 @@ target_link_libraries(dedup_server
     spdlog::spdlog
     pthread
     PkgConfig::SQLITE3
-    TBB::tbb
+    # TBB::tbb  # Removed - no longer needed
     # TODO: DEDUP MODES - Link libraries for different modes
     # FAST MODE: OpenCV + FFmpeg
     # BALANCED MODE: libvips + OpenCV + FFmpeg

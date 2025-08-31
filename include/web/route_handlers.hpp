@@ -1193,27 +1193,9 @@ private:
                 while (tpm_processing_running.load()) {
                     try {
                         Logger::info("Executing TPM-based processing cycle");
-                        ThreadPoolManager::processAllScannedFilesAsync(
-                            max_threads,
-                            // on_event callback
-                            [](const FileProcessingEvent &event) {
-                                if (event.success) {
-                                    Logger::info("TPM processed file: " + event.file_path + 
-                                               " (format: " + event.artifact_format + 
-                                               ", confidence: " + std::to_string(event.artifact_confidence) + ")");
-                                } else {
-                                    Logger::warn("TPM processing failed for: " + event.file_path + 
-                                               " - " + event.error_message);
-                                }
-                            },
-                            // on_error callback
-                            [](const std::exception &e) {
-                                Logger::error("TPM processing error: " + std::string(e.what()));
-                            },
-                            // on_complete callback
-                            []() {
-                                Logger::info("TPM processing cycle completed");
-                            });
+                        // Note: Continuous processing manager handles processing automatically
+                        // No need to manually trigger processing here
+                        Logger::info("Continuous processing manager handles processing automatically");
                     } catch (const std::exception &e) {
                         Logger::error("Error in TPM processing cycle: " + std::string(e.what()));
                     }
@@ -1426,12 +1408,14 @@ private:
         Logger::trace("Received get thread pool status request");
         try
         {
-            size_t current_threads = ThreadPoolManager::getCurrentThreadCount();
-            size_t max_allowed_threads = ThreadPoolManager::getMaxAllowedThreadCount();
+            // Note: ThreadPoolManager replaced with ContinuousProcessingManager
+            // For now, return placeholder values
+            size_t current_threads = 1;     // Single continuous processing thread
+            size_t max_allowed_threads = 1; // Single thread architecture
 
             json response = {
                 {"status", "success"},
-                {"data", {{"current_threads", current_threads}, {"max_allowed_threads", max_allowed_threads}, {"is_initialized", ThreadPoolManager::getCurrentThreadCount() > 0}}}};
+                {"data", {{"current_threads", current_threads}, {"max_allowed_threads", max_allowed_threads}, {"is_initialized", true}}}};
 
             res.set_content(response.dump(), "application/json");
             Logger::info("Thread pool status retrieved successfully");
@@ -1466,21 +1450,14 @@ private:
                 return;
             }
 
-            bool success = ThreadPoolManager::resizeThreadPool(static_cast<size_t>(new_max_threads));
-            if (success)
-            {
-                json response = {
-                    {"message", "Thread pool resized successfully"},
-                    {"new_thread_count", new_max_threads},
-                    {"current_thread_count", ThreadPoolManager::getCurrentThreadCount()}};
-                res.set_content(response.dump(), "application/json");
-                Logger::info("Thread pool resized to " + std::to_string(new_max_threads) + " threads via API");
-            }
-            else
-            {
-                res.status = 400;
-                res.set_content(json{{"error", "Failed to resize thread pool"}}.dump(), "application/json");
-            }
+            // Note: ThreadPoolManager replaced with ContinuousProcessingManager
+            // Single thread architecture doesn't support resizing
+            json response = {
+                {"message", "Thread pool resizing not supported in single-threaded architecture"},
+                {"new_thread_count", 1},
+                {"current_thread_count", 1}};
+            res.set_content(response.dump(), "application/json");
+            Logger::info("Thread pool resize request ignored - single thread architecture");
         }
         catch (const std::exception &e)
         {

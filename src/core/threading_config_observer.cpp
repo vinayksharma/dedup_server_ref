@@ -1,7 +1,7 @@
 #include "core/threading_config_observer.hpp"
 #include "poco_config_adapter.hpp"
 #include "core/thread_pool_manager.hpp"
-#include "core/scan_thread_pool_manager.hpp"
+// #include "core/scan_thread_pool_manager.hpp"  // Removed - no longer needed
 #include "core/database_connection_pool.hpp"
 #include "logging/logger.hpp"
 #include <algorithm>
@@ -73,52 +73,19 @@ void ThreadingConfigObserver::handleProcessingThreadsChange(int new_thread_count
 {
     Logger::info("ThreadingConfigObserver: Processing threads configuration changed to: " + std::to_string(new_thread_count));
 
-    // Resize the processing thread pool
-    bool resize_success = ThreadPoolManager::resizeThreadPool(static_cast<size_t>(new_thread_count));
-
-    if (resize_success)
-    {
-        Logger::info("ThreadingConfigObserver: Successfully resized processing thread pool to " +
-                     std::to_string(new_thread_count) + " threads");
-        Logger::info("ThreadingConfigObserver: New thread count will take effect for the next processing operation");
-    }
-    else
-    {
-        Logger::error("ThreadingConfigObserver: Failed to resize processing thread pool to " +
-                      std::to_string(new_thread_count) + " threads");
-    }
+    // Note: ThreadPoolManager replaced with ContinuousProcessingManager
+    // Single thread architecture doesn't support resizing
+    Logger::info("ThreadingConfigObserver: Processing thread count change ignored - single thread architecture");
+    Logger::info("ThreadingConfigObserver: ContinuousProcessingManager uses single thread for processing");
 }
 
 void ThreadingConfigObserver::handleScanThreadsChange(int new_thread_count)
 {
     Logger::info("ThreadingConfigObserver: Scan threads configuration changed to: " + std::to_string(new_thread_count));
 
-    // Get the scan thread pool manager instance
-    auto &scan_thread_manager = ScanThreadPoolManager::getInstance();
-
-    if (!scan_thread_manager.isInitialized())
-    {
-        Logger::warn("ThreadingConfigObserver: Scan thread pool manager not initialized. Initializing with " +
-                     std::to_string(new_thread_count) + " threads");
-        scan_thread_manager.initialize(static_cast<size_t>(new_thread_count));
-    }
-    else
-    {
-        // Resize the existing thread pool
-        bool resize_success = scan_thread_manager.resizeThreadPool(static_cast<size_t>(new_thread_count));
-
-        if (resize_success)
-        {
-            Logger::info("ThreadingConfigObserver: Successfully resized scan thread pool to " +
-                         std::to_string(new_thread_count) + " threads");
-            Logger::info("ThreadingConfigObserver: New thread count will take effect for the next scan operation");
-        }
-        else
-        {
-            Logger::error("ThreadingConfigObserver: Failed to resize scan thread pool to " +
-                          std::to_string(new_thread_count) + " threads");
-        }
-    }
+    // Note: ScanThreadPoolManager removed - using simple sequential scanning
+    Logger::info("ThreadingConfigObserver: Scan thread count change ignored - using sequential scanning");
+    Logger::info("ThreadingConfigObserver: Sequential scanning doesn't support thread count changes");
 }
 
 void ThreadingConfigObserver::handleDatabaseThreadsChange(int new_thread_count)

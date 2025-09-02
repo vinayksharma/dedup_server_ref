@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     Logger::info("SimpleScheduler subscribed to configuration changes for real-time scan and processing interval updates");
 
     // Start watching configuration for runtime changes
-    config_manager.startWatching("config/config.json", 2);
+    config_manager.startWatching("config.json", 2);
 
     // Initialize safety mechanisms for external library calls
     Logger::info("Initializing safety mechanisms...");

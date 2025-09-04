@@ -67,8 +67,7 @@ add_executable(media_processing_orchestrator_test
 
 target_link_libraries(media_processing_orchestrator_test
     PRIVATE
-    gtest
-    gtest_main
+    GTest::gtest_main
     pthread
     spdlog::spdlog
     nlohmann_json::nlohmann_json

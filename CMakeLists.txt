@@ -155,16 +155,11 @@ target_link_libraries(dedup_server
     # macOS native frameworks for faster file enumeration (using C APIs, no frameworks needed)
 )
 
-# Add Google Test
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.14.0
-)
-FetchContent_MakeAvailable(googletest)
+# Add Google Test - use system-installed version
+find_package(GTest REQUIRED)
 
 # Add httplib
+include(FetchContent)
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
@@ -172,13 +167,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(httplib)
 
-# Add spdlog
-FetchContent_Declare(
-    spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.12.0
-)
-FetchContent_MakeAvailable(spdlog)
+# Add spdlog - use system-installed version
+find_package(spdlog REQUIRED)
 
 # Tests
 enable_testing()
